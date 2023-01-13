@@ -1,0 +1,28 @@
+<form class="row g-3">
+	<div class="form-row">
+		<div class="col-md-6 col-sm-12">
+	  		<label for="inputEmail4" class="form-label">大18報表</label>
+	  		<app-upload [inputUploadType] = "'b18'" (outputUploadInfo) = "reportUpload($event)" (outputUploadType)="setUploadType($event)"></app-upload>
+		</div>
+	</div>
+
+	<div class="form-row">
+		<div class="col-md-6 col-sm-12">
+	  		<label for="inputEmail4" class="form-label">小18報表</label>
+	  		<app-upload [inputUploadType] = "'s18'" (outputUploadInfo) = "reportUpload($event)"></app-upload>
+		</div>
+	</div>
+
+	<div class="form-row">
+		<div class="col-md-6 col-sm-12">
+	  		<label for="inputEmail4" class="form-label">廠商提供報表</label>
+	  		<app-upload [inputUploadType] = "'bs18'" (outputUploadInfo) = "reportUpload($event)"></app-upload>
+		</div>
+	</div>	
+  </form>
+
+
+
+
+
+<!-- <button type="button" class="btn btn-primary" (click)="test()">API測試</button> -->

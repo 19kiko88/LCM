@@ -1,0 +1,39 @@
+<header>
+    <div class="wrap">
+          <div class="logo">
+            <a href="#">
+                <div>
+                    <span style="font-size: 25px; font-weight: bold;">LCM</span>
+                    <span style="margin-left: 10px; font-size:10px;">Layout-CAE</span>
+                </div>
+            </a>
+          </div>
+
+
+          <span *ngFor="let item of navItems">
+            <!-- Handle branch node buttons here -->
+            <span *ngIf="item.children && item.children.length > 0">                
+              <button class="btn btn-primary menu-btn" [matMenuTriggerFor]="menu.childMenu">
+                {{item.displayName}}
+                <mat-icon>expand_more</mat-icon>
+              </button>
+
+              <app-menu-item #menu [items]="item.children"></app-menu-item>
+            </span>
+
+            <!-- Leaf node buttons here -->
+            <span *ngIf="!item.children || item.children.length === 0">
+              <button class="btn btn-primary menu-btn" [routerLink]="item.route">
+                {{item.displayName}}
+              </button>
+            </span>
+          </span>
+    </div>
+
+<!-- 
+    <nav class="wrap">
+        <div class="basic-container">
+
+          </div>
+    </nav> -->
+</header>

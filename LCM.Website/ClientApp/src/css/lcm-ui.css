@@ -1,0 +1,142 @@
+
+html, body {
+  --bs-body-bg: #d2e7ef;
+}
+
+/*Header-----------------------------------------*/
+header {
+    position: absolute;
+    position: fixed;
+    top: 0;
+    min-height: 54px;
+    width: 100%;
+    color: #fff;
+    background-color: #333;
+    z-index: 999;
+    min-width: 1170px;
+  }
+  
+  @media screen and (min-width: 0px) {
+    header {
+      min-width: 100%;
+    }
+  }
+  header h3 {
+    display: inline-block;
+    float: left;
+    line-height: 54px;
+  }
+  
+  header .wrap {
+    position: relative;
+    min-height: 54px;
+  }
+
+  header .wrap .menu-btn {
+    margin:7px 0 0 20px;
+  }
+
+
+  /*logo & EIP*/
+/* .logo-eip {
+  position: relative;
+  display: block;
+  float: left;
+  width: 198px;
+  height: 54px;
+  border-right: 1px solid #444;
+} */
+
+.logo a {
+  display: block;
+  float: left;
+  width: 280px;
+  height: 54px;
+  margin: 0;
+  color: #fff !important;
+  padding: 8px 0 0 110px;
+  margin-left: 15px;
+  font-size: 16px;
+  letter-spacing: 1px;
+  text-decoration: none;
+  background: url(../assets/logo.png) no-repeat;
+}
+
+header nav, header + nav {
+  left: 0;
+  line-height: 32px;
+  min-height: 33px;
+  min-width: 1280px;
+  width: 100%;
+  color: #fff;
+  border-top: 1px solid #444444;
+  background-color: #444;
+  z-index: 9;
+  white-space: nowrap;
+}
+
+
+/*Article-----------------------------------------*/
+/* .basic-container {
+  padding: 64px 64px 400px 64px;
+} */
+
+.wrap {
+  margin: 0 auto; /*上下 & 左右*/
+}
+
+article {
+  min-height: calc(100vh - 110px);
+}
+
+article .article-container {
+  padding: 65px 0 0 10px;
+}
+
+/* .version-info {
+  font-size: 8pt;
+  float: right;
+  padding: 8px;
+}  */
+
+
+/*Footer-----------------------------------------*/
+footer {
+  position: relative;
+  left: 0;
+  padding: 8px 0;
+  width: 100%;
+  min-width: 1280px;
+  max-width: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+  color: #fff;
+  background-color: #333;
+  clear: both;
+}
+
+/*Mat Icons-----------------------------------------*/
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../assets/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
