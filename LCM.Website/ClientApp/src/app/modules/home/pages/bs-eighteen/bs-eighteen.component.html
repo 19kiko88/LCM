@@ -1,28 +1,30 @@
 <form class="row g-3">
 	<div class="form-row">
 		<div class="col-md-6 col-sm-12">
-	  		<label for="inputEmail4" class="form-label">大18報表</label>
-	  		<app-upload [inputUploadType] = "'b18'" (outputUploadInfo) = "reportUpload($event)" (outputUploadType)="setUploadType($event)"></app-upload>
+	  		<label for="inputEmail4" class="form-label">小18報表</label>
+	  		<app-upload [inputUploadType] = "'s18'" (outputUploadInfo) = "reportUpload($event)" (startLoading) = "setLoading($event)"></app-upload>
 		</div>
+		<span style="color: black;" class="badge badge-secondary">{{notificationS18}}</span>
 	</div>
 
 	<div class="form-row">
 		<div class="col-md-6 col-sm-12">
-	  		<label for="inputEmail4" class="form-label">小18報表</label>
-	  		<app-upload [inputUploadType] = "'s18'" (outputUploadInfo) = "reportUpload($event)"></app-upload>
+	  		<label for="inputEmail4" class="form-label">大18報表</label>
+	  		<app-upload [inputUploadType] = "'b18'" (outputUploadInfo) = "reportUpload($event)" (startLoading) = "setLoading($event)"></app-upload>
+			<span style="color: black;" class="badge badge-secondary">{{notificationB18}}</span>
 		</div>
 	</div>
 
 	<div class="form-row">
 		<div class="col-md-6 col-sm-12">
 	  		<label for="inputEmail4" class="form-label">廠商提供報表</label>
-	  		<app-upload [inputUploadType] = "'bs18'" (outputUploadInfo) = "reportUpload($event)"></app-upload>
+	  		<app-upload #upload_3 [inputUploadType] = "'vendor'" (outputUploadInfo) = "reportUpload($event)" (startLoading) = "setLoading($event)"></app-upload>
 		</div>
 	</div>	
   </form>
 
 
-
+  <app-loading [loader]="isLoading" [loadingMsg] = "loadingMsg"></app-loading>
 
 
 <!-- <button type="button" class="btn btn-primary" (click)="test()">API測試</button> -->

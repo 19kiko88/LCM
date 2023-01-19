@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LCM.Services.Models;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -24,5 +26,13 @@ namespace LCM.Services.Interfaces
         /// <param name="headerRow">表頭所在列數</param>
         /// <returns></returns>
         public Task<DataTable> ReadExcel<T>(string filePath, int? lastCell, int headerRow = 1);
+
+        /// <summary>
+        /// 匯出PK報表
+        /// </summary>
+        /// <param name="data">報表內容</param>
+        /// <param name="filePath">廠商提供報表的路徑，要把PK結果加到Sheet</param>
+        /// <returns></returns>
+        public Task<FileStreamResult> ExportExcel(List<List<PK_RESULT_REPORT>> data, string filePath);
     }
 }

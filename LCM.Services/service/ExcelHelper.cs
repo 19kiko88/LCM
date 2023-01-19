@@ -89,15 +89,17 @@ namespace LCM.Services.service
                     }
                     else if (columnNameSetDone)
                     {
-                        //Add rows to DataTable.
-                        dt.Rows.Add();
                         int i = 0;
 
-                        var endCell = lastCell.HasValue ? lastCell.Value : row.LastCellUsed().Address.ColumnNumber;
-                        foreach (IXLCell cell in row.Cells(1/*row.FirstCellUsed().Address.ColumnNumber*/, endCell))
-                        {
-                            dt.Rows[dt.Rows.Count - 1][i] = cell.Value;//.ToString();
-                            i++;
+                        if (!row.IsEmpty())
+                        {//Add rows to DataTable.
+                            dt.Rows.Add();
+                            var endCell = lastCell.HasValue ? lastCell.Value : row.LastCellUsed().Address.ColumnNumber;
+                            foreach (IXLCell cell in row.Cells(1/*row.FirstCellUsed().Address.ColumnNumber*/, endCell))
+                            {
+                                dt.Rows[dt.Rows.Count - 1][i] = cell.Value;//.ToString();
+                                i++;
+                            }
                         }
                     }
 
@@ -157,7 +159,6 @@ namespace LCM.Services.service
                  */
                 //IXLCell defaultcell = Worksheet.Cell(3, 1);
                 ws.Range($"A4:AA{NumberOfLastRow + dataCount}").Style = ws.Cell(3, 1).Style;//defaultcell.Style; //預設全部Cell Background Color
-                ws.Range($"O4:O{NumberOfLastRow + dataCount}").Style = ws.Cell(3, 15).Style;//Vendor 小18 SO。Cell Background Color(黃)
                 ws.Range($"G4:M{NumberOfLastRow + dataCount}").Style = ws.Cell(3, 7).Style;//DB 小18。Cell Background Color(藍)
                 ws.Range($"U4:Z{NumberOfLastRow + dataCount }").Style = ws.Cell(3, 21).Style;//DB 大18。Cell Background Color(藍)
                 ws.Range($"AA4:AA{NumberOfLastRow + dataCount }").Style = ws.Cell(3, 27).Style;//廠商備註(藍，無邊框)
@@ -166,9 +167,12 @@ namespace LCM.Services.service
             foreach (var cell in ws.Cells().Where(c => c.Value.ToString().Contains("@")))
             {
                 var array = cell.Value?.ToString()?.Split('@');
+                var styleString = "";
+
                 for (int i = 0; i < array.Length; i++)
-                {                    
-                    if (string.Concat("@", array[i]).Contains(EXCEL_CELL_STYLE.Waring))
+                {
+                    styleString = string.Concat("@", array[i]);
+                    if (styleString.Contains(EXCEL_CELL_STYLE.Waring))
                     {//設定Excell Cell Style => 黃底.紅字.粗體，拿掉Style字串
                         cell.Style.Fill.BackgroundColor = XLColor.Yellow;
                         cell.Style.Font.FontColor = XLColor.Red;
@@ -176,20 +180,20 @@ namespace LCM.Services.service
                         cell.Value = cell.Value?.ToString()?.Replace(EXCEL_CELL_STYLE.Waring, "");
                     }
 
-                    if (string.Concat("@", array[i]).Contains(EXCEL_CELL_STYLE.NoBorder))
+                    if (styleString.Contains(EXCEL_CELL_STYLE.NoBorder))
                     {//設定Excell Cell Style => 拿掉Cell內.外邊框，拿掉Style字串        
                         cell.Style.Border.OutsideBorder = XLBorderStyleValues.None;
                         cell.Style.Border.InsideBorder = XLBorderStyleValues.None;
                         cell.Value = cell.Value?.ToString()?.Replace(EXCEL_CELL_STYLE.NoBorder, "");
                     }
 
-                    if (string.Concat("@", array[i]).Contains(EXCEL_CELL_STYLE.FormatCnMD))
+                    if (styleString.Contains(EXCEL_CELL_STYLE.FormatCnMD))
                     {//設定PO出貨日欄位格式為m月d日
                         cell.Style.NumberFormat.Format = "m\"月\"d\"日\"";
                         cell.Value = cell.Value?.ToString()?.Replace(EXCEL_CELL_STYLE.FormatCnMD, "");
                     }
 
-                    if (string.Concat("@", array[i]).Contains(EXCEL_CELL_STYLE.Merge))
+                    if (styleString.Contains(EXCEL_CELL_STYLE.Merge))
                     {//廠商備註欄位合併儲存格by小18
                         var range = cell.Value?.ToString().Split(new char[] { '_', ',' });
                         var start = Convert.ToInt32(range[1]);

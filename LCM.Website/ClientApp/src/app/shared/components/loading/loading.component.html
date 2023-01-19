@@ -1,0 +1,17 @@
+<!-- <div class="blockUi d-flex align-items-center justify-content-center" style="display: block;" *ngIf="loader">
+    <div class="spinner-grow text-warning" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+    <div>
+      <span class="spinner-text ml-3">Loading...</span>
+    </div>
+  </div> -->
+
+
+  <div class="blockUi d-flex align-items-center justify-content-center" style="display: block;" *ngIf="loader">
+    <div class="spinner-border text-primary" role="status">
+        <!-- <span class="sr-only">Loading...</span> -->
+    </div>
+    <span style="color: white">{{loadingMsg}}</span>
+  </div>
+  

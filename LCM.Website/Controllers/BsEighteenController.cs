@@ -4,6 +4,7 @@ using UniversalLibrary.Models;
 using LCM.Services.Interfaces;
 using LCM.Services.Models.DataTablelHederMapping;
 using LCM.Website.Dtos.Request;
+using LCM.Services.Models;
 
 namespace LCM.Website.Controllers
 {
@@ -24,7 +25,9 @@ namespace LCM.Website.Controllers
             ) 
         {
             _env = env;
-            _fileFolder = Path.Combine($@"{_env.ContentRootPath}", @"Content\Temp");
+            //_env.ContentRootPath => D:\Homer\Project\LCM\LCM.Website\Content\Temp
+            //_env.WebRootPath => Content\Temp (避免實體路徑全部顯示)
+            _fileFolder = Path.Combine($@"{_env.WebRootPath}", @"Content\Temp");
             _excelService = excelService;
             _dataService = dataService;
         }
@@ -38,7 +41,7 @@ namespace LCM.Website.Controllers
         public async Task<Result<string>> Upload(/*[FromForm]IFormFile postFile*/[FromForm] BsEighteen.Upload data)
         {
             var result = new Result<string>() { Success = false };
-            result.Success = false;
+            result.Success = false;            
 
             try
             {
@@ -82,6 +85,7 @@ namespace LCM.Website.Controllers
                         postFile.CopyTo(stream);
                     }
 
+                    result.Message = data.uploadType;
                     result.Content = fullFilePath;
                     result.Success = true;                   
                 }
@@ -92,7 +96,7 @@ namespace LCM.Website.Controllers
             }
             catch (Exception ex)
             {
-                result.Exception = ex;
+                result.Message = ex.Message;
             }
             return result;
         }
@@ -103,9 +107,9 @@ namespace LCM.Website.Controllers
         /// <param name="filePath"></param>
         /// <returns>資料insert db筆數</returns>
         [HttpPost]
-        public async Task<Result<int>> InsertS18(BsEighteen.InsertReport data)
+        public async Task<Result<UPLOAD_INFO>> InsertS18(BsEighteen.InsertReport data)
         {
-            var result = new Result<int>() { Success = false };            
+            var result = new Result<UPLOAD_INFO>() { Success = false };            
             result.Success = false;
 
             try
@@ -119,7 +123,7 @@ namespace LCM.Website.Controllers
             }
             catch (Exception ex)
             {
-                result.Exception = ex;
+                result.Message = ex.Message;
             }
             return result;
         }
@@ -130,9 +134,9 @@ namespace LCM.Website.Controllers
         /// <param name="filePath"></param>
         /// <returns>資料insert db筆數</returns>
         [HttpPost]
-        public async Task<Result<int>> InsertB18(BsEighteen.InsertReport data)
+        public async Task<Result<UPLOAD_INFO>> InsertB18(BsEighteen.InsertReport data)
         {
-            var result = new Result<int>() { Success = false };
+            var result = new Result<UPLOAD_INFO>() { Success = false };
             result.Success = false;
 
             try
@@ -146,7 +150,7 @@ namespace LCM.Website.Controllers
             }
             catch (Exception ex)
             {
-                result.Exception = ex;
+                result.Message = ex.Message;
             }
             return result;
         }
@@ -157,25 +161,23 @@ namespace LCM.Website.Controllers
         /// <param name="filePath"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<Result> ExportPkBs18(BsEighteen.InsertReport data)
+        [Filters.Exception]
+        public async Task<FileStreamResult> ExportPkBs18(BsEighteen.InsertReport data)
         {
-            var result = new Result() { Success = false };
-            result.Success = false;
+            FileStreamResult fs;
 
             try
             {
-                var dt = await _excelService.ReadExcel<VENDOR_REPORT>(data.filePath, 16, 1);
-                if (dt != null && dt.Rows.Count > 0)
-                {//bulk insert
-                    await _dataService.ExportPkBs18(dt);
-                }
-                result.Success = true;
+                var dt = await _excelService.ReadExcel<LCM.Services.Models.DataTablelHederMapping.VENDOR_REPORT>(data.filePath, 16, 1);
+                var xlsxContent = await _dataService.GetPkBs18Content(dt);
+                fs = await _excelService.ExportExcel(xlsxContent, data.filePath);
             }
             catch (Exception ex)
             {
-                result.Exception = ex;
+                throw ex;
             }
-            return result;
+
+            return fs;
         }
     }
 }

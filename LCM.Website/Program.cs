@@ -1,3 +1,5 @@
+using ElmahCore;
+using ElmahCore.Mvc;
 using LCM.Repositories;
 using LCM.Services.Implements;
 using LCM.Services.Interfaces;
@@ -23,10 +25,14 @@ builder.Services.AddScoped<IExcelService, ExcelService>();
 builder.Services.AddScoped<IDataService, DataService>();
 
 
-//builder.Services.Configure<IISServerOptions>(options =>
-//{
-//    options.MaxRequestBodySize = 2147483648;
-//});
+//Ref：https://github.com/ElmahCore/ElmahCore
+builder.Services.AddElmah(options =>
+{
+    options.Path = "lcm_elmah";
+    options.OnPermissionCheck = Context => Context.User.Identity.IsAuthenticated;
+    //options.LogPath = "~/logs";
+});
+
 
 /*CORS*/
 if (builder.Environment.IsDevelopment())
@@ -66,12 +72,15 @@ if (app.Environment.IsDevelopment())
 
 /*授權驗證*/
 app.UseAuthorization();//Middleware啟用授權功能，要搭配[Authenrization]，沒加上[Authenrization]還是不會進行授權驗證
-/*
+
+//ELMAH must bwtween UseAuthorization and UseEndpoints
+app.UseElmah();
+
+//不管有無[Authenrization]，都會進行授權驗證
 app.UseEndpoints(endpoints =>
-{//不管有無[Authenrization]，都會進行授權驗證
+{
     endpoints.MapControllers().RequireAuthorization();
 });
-*/
 
 app.MapControllers();
 

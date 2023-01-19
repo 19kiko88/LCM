@@ -1,4 +1,4 @@
 <div class="input-group mb-3"> <!-- m:margin. b:margin-bottom -->
-  <input class="form-control" style="background-color: lightgrey;" type="file" (change)="selectFile($event)" accept=".xlsx" />
-  <button class="btn btn-primary btn-sm" [disabled]="!selectedFiles" (click)="upload();">上傳</button>
+  <input class="form-control" style="background-color: lightgrey;" type="file" (change)="selectFile($event)" accept=".xlsx" #myFileInput/>
+  <button type="button" class="btn btn-primary btn-sm" [disabled]="selectedFiles ? false : true" (click)="upload();">上傳</button>  
 </div>

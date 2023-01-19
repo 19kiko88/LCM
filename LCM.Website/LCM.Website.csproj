@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -7,10 +7,30 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Attribute\**" />
+    <Compile Remove="Models\**" />
+    <Content Remove="Attribute\**" />
+    <Content Remove="Models\**" />
+    <EmbeddedResource Remove="Attribute\**" />
+    <EmbeddedResource Remove="Models\**" />
+    <None Remove="Attribute\**" />
+    <None Remove="Models\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\WeatherForecastController.cs" />
+    <Compile Remove="CustomExceptions.cs" />
+    <Compile Remove="Filters\QQ.cs" />
+    <Compile Remove="WeatherForecast.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="simple.xlsx" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ElmahCore" Version="2.1.2" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.9" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="7.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />

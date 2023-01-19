@@ -7,3 +7,10 @@
         -moz-box-sizing: border-box; 
         }
 }
+
+@media screen and ( max-width:576px )
+{
+    article .article-container {
+        padding: 100px 0 0 10px;
+      }
+}
