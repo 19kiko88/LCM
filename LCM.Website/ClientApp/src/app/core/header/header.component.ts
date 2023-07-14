@@ -12,15 +12,25 @@ export class HeaderComponent {
 
   navItems: NavItem[] = [
     {
-      displayName: '大小18報表處理',
+      displayName: '功能清單',
       iconName: 'cloud_upload',
-      route: 'bs18',
+      route: 'bs188',
       children: [
-        // {
-        //   displayName: '大小18比對',
-        //   iconName: 'cloud_upload',  
-        //   route: 'bs18',
-        // }
+        {
+          displayName: '大小18比對',
+          iconName: 'label_important',  
+          route: 'bs18',
+        },
+        {
+          displayName: '手動結案',
+          iconName: 'label_important',  
+          route: 'manual_close',
+        },
+        {
+          displayName: '大小18比對/手動結案(tab ver.)',
+          iconName: 'label_important',  
+          route: 'main',
+        }
       ]
     },
     // {

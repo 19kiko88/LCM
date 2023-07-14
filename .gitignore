@@ -419,3 +419,6 @@ FodyWeavers.xsd
 # Built Visual Studio Code Extensions
 *.vsix
 
+Upload
+Temp
+Download

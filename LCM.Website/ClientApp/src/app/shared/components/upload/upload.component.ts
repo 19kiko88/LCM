@@ -72,39 +72,39 @@ export class UploadComponent
     {
       const file: File | null = this.selectedFiles.item(0);
 
-      if (file)
-      {
-        this.currentFile = file;
-        this._bsEighteenService.upload(this.inputUploadType, this.currentFile)
-          .subscribe({
-            next: async (event) =>
-            {
-              if (event.type === HttpEventType.UploadProgress)
-              {
-                this.progress = Math.round(100 * event.loaded / event.total);
-              }
-              else if (event.type === HttpEventType.Response)
-              {            
-                if (event.body)
-                {
-                  //res = event.body;
-                  console.log(`${this.inputUploadType} upload end.`);
-                  this.selectedFiles = undefined;
-                  this.myFileInput.nativeElement.value = '';
-                  await this.outputUploadInfo?.emit(event.body);
-                }
-              }
-            },
-            complete: () => {
+      // if (file)
+      // {
+      //   this.currentFile = file;
+      //   this._bsEighteenService.upload(this.inputUploadType, this.currentFile)
+      //     .subscribe({
+      //       next: async (event) =>
+      //       {
+      //         if (event.type === HttpEventType.UploadProgress)
+      //         {
+      //           this.progress = Math.round(100 * event.loaded / event.total);
+      //         }
+      //         else if (event.type === HttpEventType.Response)
+      //         {            
+      //           if (event.body)
+      //           {
+      //             //res = event.body;
+      //             console.log(`${this.inputUploadType} upload end.`);
+      //             this.selectedFiles = undefined;
+      //             this.myFileInput.nativeElement.value = '';
+      //             await this.outputUploadInfo?.emit(event.body);
+      //           }
+      //         }
+      //       },
+      //       complete: () => {
 
-            },
-            error: () => {
-              this.startLoading?.emit(false);
-            }
-          }
+      //       },
+      //       error: () => {
+      //         this.startLoading?.emit(false);
+      //       }
+      //     }
 
-        )
-      }
+      //   )
+      // }
 
       //this.selectedFiles = undefined;
     }

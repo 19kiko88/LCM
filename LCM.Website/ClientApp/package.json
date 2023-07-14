@@ -5,6 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build-vt02": "ng build --configuration=vt02",
+    "build-vt01": "ng build --configuration=vt01 && gzip-all \"./dist/*.{css,js}\"",
+    "prod": "ng build --prod && gzip-all \"./dist/*.{css,js}\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -23,8 +26,8 @@
     "@ng-bootstrap/ng-bootstrap": "^14.0.0",
     "@popperjs/core": "^2.11.6",
     "bootstrap": "^5.2.3",
-    "node-sass": "^8.0.0",
     "rxjs": "~7.5.0",
+    "sass": "^1.57.1",
     "sweetalert2": "^11.7.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
@@ -35,6 +38,7 @@
     "@angular/compiler-cli": "^15.0.4",
     "@angular/localize": "^15.0.4",
     "@types/jasmine": "~4.0.0",
+    "gzip-all": "^1.0.0",
     "jasmine-core": "~4.1.0",
     "karma": "~6.3.0",
     "karma-chrome-launcher": "~3.1.0",

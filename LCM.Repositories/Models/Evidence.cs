@@ -21,5 +21,5 @@ public partial class Evidence
 
     public DateTime UpdateTime { get; set; }
 
-    public virtual ICollection<PnEvidence> PnEvidence { get; } = new List<PnEvidence>();
+    public virtual ICollection<PnEvidence> PnEvidence { get; set; } = new List<PnEvidence>();
 }

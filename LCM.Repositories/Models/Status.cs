@@ -11,5 +11,5 @@ public partial class Status
 
     public string Description { get; set; }
 
-    public virtual ICollection<PnPrice> PnPrice { get; } = new List<PnPrice>();
+    public virtual ICollection<PnPrice> PnPrice { get; set; } = new List<PnPrice>();
 }

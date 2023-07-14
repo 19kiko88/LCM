@@ -12,5 +12,7 @@ namespace LCM.Services.Models
         public static string NoBorder { get { return "@NoBorder"; } }
         public static string Merge { get { return "@Merge"; } }
         public static string FormatCnMD { get { return "@FormatCnMD"; } }
+        public static string DropDownList { get { return "@DropDownList"; } }
+
     }
 }

@@ -16,16 +16,18 @@ namespace LCM.Services.Interfaces
         /// </summary>
         /// <param name="filePath">excel檔路徑</param>
         /// <param name="headerRow">表頭所在列數</param>
+        /// <param name="sheetIndex">要讀取的分頁index</param>
         /// <returns></returns>
-        public Task<DataTable> ReadExcel(string filePath, int? lastCell, int headerRow = 1);
+        public Task<DataTable> ReadExcel(string filePath, int? lastCell, int headerRow = 1, int sheetIndex = 1);
 
         /// <summary>
         /// 讀取Excel內容轉DataTable(DT表頭由Model重新取得，才能與DB欄位對應)
         /// </summary>
         /// <param name="filePath">excel檔路徑</param>
         /// <param name="headerRow">表頭所在列數</param>
+        /// <param name="sheetIndex">要讀取的分頁index</param>
         /// <returns></returns>
-        public Task<DataTable> ReadExcel<T>(string filePath, int? lastCell, int headerRow = 1);
+        public Task<DataTable> ReadExcel<T>(string filePath, int? lastCell, int headerRow = 1, int sheetIndex = 1);
 
         /// <summary>
         /// 匯出PK報表

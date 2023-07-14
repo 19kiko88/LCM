@@ -26,4 +26,8 @@ public partial class Xx_Po_Receipt
     public int Quantity { get; set; }
 
     public DateTime UpdateTime { get; set; }
+
+    public int? XxPor0001_Resell_ID { get; set; }
+
+    public virtual XxPor0001_Resell XxPor0001_Resell { get; set; }
 }

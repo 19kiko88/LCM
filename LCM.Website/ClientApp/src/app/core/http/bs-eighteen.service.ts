@@ -1,10 +1,10 @@
+import { FileInfo } from './../../shared/models/dto/request/file-info';
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/internal/Observable';
 import { map } from 'rxjs/internal/operators/map';
 import { tap } from 'rxjs/internal/operators/tap';
 import { IResultDto } from 'src/app/shared/models/dto/response/result-dto';
-import { UploadInfo } from 'src/app/shared/models/dto/response/upload-info-dto';
 import { environment } from 'src/environments/environment';
 import { BaseService } from './base.service';
 
@@ -21,24 +21,13 @@ export class BsEighteenService extends BaseService
     super(); 
   }
 
-  //excel上傳
-  upload(uploadType:string, file: File): Observable<any> 
-  {
-    const url = `${environment.apiBaseUrl}/BsEighteen/upload`;
-    const formData: FormData = new FormData();    
-    formData.append('uploadType', uploadType);
-    formData.append('postFile', file);
-
-    return this.httpClient.post(url, formData, { reportProgress: true, observe: 'events', withCredentials: true });
-  }
-
   //excel上傳後，大18資料寫入DB
-  insertB18(filePath: string): Observable<IResultDto<UploadInfo>> 
+  insertB18(data: FileInfo): Observable<IResultDto<string>> 
   {
     const url = `${environment.apiBaseUrl}/BsEighteen/InsertB18`;
     const options = this.generatePostOptions();
 
-    return this.httpClient.post<IResultDto<UploadInfo>>(url, {filePath: filePath}, options)
+    return this.httpClient.post<IResultDto<string>>(url, data, options)
       // .pipe(
       //   tap((_) => this.log(''))
       //   //, map((result) => this.processResult(result))
@@ -46,22 +35,22 @@ export class BsEighteenService extends BaseService
   }
 
   //excel上傳後，小18資料寫入DB
-  insertS18(filePath: string): Observable<IResultDto<UploadInfo>>
+  insertS18(data: FileInfo): Observable<IResultDto<string>>
   {
     const url = `${environment.apiBaseUrl}/BsEighteen/InsertS18`;
     const options = this.generatePostOptions();
 
-    return this.httpClient.post<IResultDto<UploadInfo>>(url, {filePath: filePath}, options)
+    return this.httpClient.post<IResultDto<string>>(url, data, options)
   }
 
   //廠商提供excel上傳後，匯出PK報表
-  exportPK(filePath: string): Observable<IResultDto<any>>
+  exportPK(data: FileInfo): Observable<IResultDto<any>>
   {
     const url = `${environment.apiBaseUrl}/BsEighteen/ExportPkBs18`;
     const options:any = this.generatePostOptions();
     options.responseType = 'arraybuffer';
 
-    return this.httpClient.post(url, {filePath: filePath}, options).pipe(
+    return this.httpClient.post(url, data, options).pipe(
       map(data => {
         var enc = new TextDecoder("utf-8");
         var arr = new Uint8Array(data);  
@@ -83,6 +72,15 @@ export class BsEighteenService extends BaseService
       })
     )
   }
+
+    //手動結案
+    manualClose(data: FileInfo): Observable<IResultDto<number>>
+    {
+      const url = `${environment.apiBaseUrl}/BsEighteen/ManualClose`;
+      const options = this.generatePostOptions();
+  
+      return this.httpClient.post<IResultDto<number>>(url, data, options)
+    }
 
   private downloadFile(name: string, data: any, type: string)
   {     

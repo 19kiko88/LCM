@@ -9,25 +9,35 @@
             </a>
           </div>
 
+          <div class="menu"  style="display: inline-flex; justify-content: center; margin-top: 10px;">
+            <!-- <button mat-button [matMenuTriggerFor]="menu"  style="background:white; text-align: center;">功能清單</button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item [routerLink]="['bs18']">大小18比對報表</button>
+              <button mat-menu-item [routerLink]="['manual_close']">手動結案</button>
+            </mat-menu>     -->
+            
+            
+            <div class="basic-container">
+                <span *ngFor="let item of navItems">
+                  <!-- Handle branch node buttons here -->
+                  <span *ngIf="item.children && item.children.length > 0">
+                    <button mat-raised-button color="primary" [matMenuTriggerFor]="menu.childMenu">
+                      {{item.displayName}}
+                      <mat-icon>expand_more</mat-icon>
+                    </button>
+                    <app-menu-item #menu [items]="item.children"></app-menu-item>
+                  </span>
+                  <!-- Leaf node buttons here -->
+                  <span *ngIf="!item.children || item.children.length === 0">
+                    <button mat-button color="primary" [routerLink]="item.route">
+                      {{item.displayName}}
+                    </button>
+                  </span>
+                </span>
+              </div>             
+          </div>
 
-          <span *ngFor="let item of navItems">
-            <!-- Handle branch node buttons here -->
-            <span *ngIf="item.children && item.children.length > 0">                
-              <button class="btn btn-primary menu-btn" [matMenuTriggerFor]="menu.childMenu">
-                {{item.displayName}}
-                <mat-icon>expand_more</mat-icon>
-              </button>
 
-              <app-menu-item #menu [items]="item.children"></app-menu-item>
-            </span>
-
-            <!-- Leaf node buttons here -->
-            <span *ngIf="!item.children || item.children.length === 0">
-              <button class="btn btn-primary menu-btn" [routerLink]="item.route">
-                {{item.displayName}}
-              </button>
-            </span>
-          </span>
     </div>
 
 <!-- 

@@ -1,9 +1,12 @@
+import { FileInfo } from './../../../../shared/models/dto/request/file-info';
 import { Component } from '@angular/core';
-import { IResultDto } from 'src/app/shared/models/dto/response/result-dto';
 import { BsEighteenService } from '../../../../core/http/bs-eighteen.service'
 import { DatePipe } from '@angular/common'
 import Swal from 'sweetalert2';
 import {SweetAlertService} from '../../../../core/service/sweet-alert.service'
+import { UploadInfo, UploadType } from 'src/app/shared/components/new-upload/new-upload.component';
+import { environment } from 'src/environments/environment';
+import { FileTypeCode } from 'src/app/shared/models/file-type-code';
 
 
 @Component({
@@ -14,49 +17,72 @@ import {SweetAlertService} from '../../../../core/service/sweet-alert.service'
 
 export class BsEighteenComponent 
 {  
-  //@ViewChild("upload_3") upload_3?: UploadComponent;
   isLoading: boolean = false;
   loadingMsg: string = "";
   notificationS18: string = "";
   notificationB18: string = "";
+  notificationPkResult: string = "";
+  uploadApiURL: string = "";
 
   constructor(
     private _bsEighteenService: BsEighteenService,
-    private swl: SweetAlertService,
+    private _swlService: SweetAlertService,
     private datepipe: DatePipe
   ){  }
 
-  reportUpload(data: IResultDto<string>)
+  ngOnInit()
   {
-    this.loadingMsg = "資料處理中..."
-    this.isLoading = true;
+    this.uploadApiURL = `${environment.apiBaseUrl}/BsEighteen/Upload`;
+  } 
 
-    if(!data.success && data.message)
+  setUploadInfo(data: UploadInfo)
+  {
+    let fileInfo: FileInfo = {fileName: data.fileName, fileType: data.uploadFileType}
+    let typeCN:string = '';
+    let msgSuccess:string = '';
+    let msgFail:string = '';
+
+    switch(data.uploadFileType)
     {
-      Swal.fire('', data.message, 'error');
-      this.isLoading = false;
-      return;
+      case FileTypeCode.S18 :
+        typeCN = '小18報表';
+        break;
+      case FileTypeCode.B18 :
+        typeCN = '大18報表';
+        break;
+      case FileTypeCode.Vendor :
+        typeCN = 'pk報表';
+        break;
     }
-    else 
+
+    msgSuccess = `${typeCN}匯入完成.`;
+    msgFail = `${typeCN}匯入異常，請聯絡CAE Team.`;
+
+    if(data.status == UploadType.Processing)
     {
-      if (data.message == "s18") 
+      this.loadingMsg = '檔案上傳中...';
+      this.isLoading = true;
+    }
+    else if (data.status == UploadType.Success)
+    {    
+      this.loadingMsg = '檔案資料處理中...';      
+      if (data.uploadFileType == FileTypeCode.S18) 
       {
-        console.log("s18 insert start.");
-        this._bsEighteenService.insertS18(data.content).subscribe({
+        this._bsEighteenService.insertS18(fileInfo).subscribe({
           next: (res) => 
           {
             if (res.success) 
             {
-              this.swl.showSwal('', '小18報表匯入完成.', 'info');
-              this.notificationS18 = `上傳日期：${this.datepipe.transform(res.content.uploadDT, 'yyyy/MM/dd HH:mm:ss')}; ESB日期：${this.datepipe.transform(res.content.esbDTStart, 'yyyy/MM/dd')}~${this.datepipe.transform(res.content.esbDTSEnd, 'yyyy/MM/dd')}; 上傳資料筆數：${res.content.uploadDataCount}/${res.content.totalDataCount}`;
+              this._swlService.showSwal('', msgSuccess, 'info');
+              this.notificationS18 = res.content;
             }            
             else 
             {
-              this.swl.showSwal('', `小18報表匯入異常，請聯絡CAE Team.<br\>${res.message}`, 'error');
+              this._swlService.showSwal('', `${msgFail}<br\>${res.message}`, 'error');
             }
           },
           error: (err) =>{
-            this.swl.showSwal('', '小18報表匯入異常，請聯絡CAE Team.', 'error');
+            this._swlService.showSwal('', msgFail, 'error');
             this.isLoading = false;
           },
           complete: () =>{
@@ -64,57 +90,54 @@ export class BsEighteenComponent
           }
         })
       }
-      else if (data.message == "b18") 
+      else if (data.uploadFileType == FileTypeCode.B18) 
       {
-        console.log("b18 insert start.");
-        this._bsEighteenService.insertB18(data.content).subscribe({
+        this._bsEighteenService.insertB18(fileInfo).subscribe({
           next: (res) => 
           {
             if (res.success) 
             {
-              this.swl.showSwal('', '大18報表匯入完成.', 'info');
-              this.notificationB18 = `上傳日期：${this.datepipe.transform(res.content.uploadDT, 'yyyy/MM/dd HH:mm:ss')}; Data Market日期：${this.datepipe.transform(res.content.dataMarketDTStart, 'yyyy/MM/dd')}~${this.datepipe.transform(res.content.dataMarketDTEnd, 'yyyy/MM/dd')}; 上傳資料筆數：${res.content.uploadDataCount}/${res.content.totalDataCount}`;
+              this._swlService.showSwal('', msgSuccess, 'info');
+              this.notificationB18 = res.content;
             }            
             else 
             {
-              this.swl.showSwal('', `大18報表匯入異常，請聯絡CAE Team.<br\>${res.message}`, 'error');
+              this._swlService.showSwal('', `${msgFail}<br\>${res.message}`, 'error');
             }
           },
-          error: (err) =>{
-            this.swl.showSwal('', '大18報表匯入異常，請聯絡CAE Team.', 'error');
+          error: (err) =>
+          {
+            this._swlService.showSwal('', msgFail, 'error');
             this.isLoading = false;
           },
-          complete: () =>{
+          complete: () =>
+          {
             this.isLoading = false;
           }
         })
       }
-      else if (data.message == "vendor") 
+      else if (data.uploadFileType == FileTypeCode.Vendor) 
       {
-        console.log("pk export start.");
-        this._bsEighteenService.exportPK(data.content).subscribe(res => {
+        this._bsEighteenService.exportPK(fileInfo).subscribe(res => {
           if (res.success)
           {
-            this.swl.showSwal('', 'pk報表產出成功.', 'info');
+            this._swlService.showSwal('', 'pk報表產出成功.', 'info');
+            this.notificationPkResult = `報表最後產出時間：${this.datepipe .transform(new Date(), "yyyy/MM/dd HH:mm:ss")}`;
           }
           else 
           {
-            this.swl.showSwal('', `pk報表產出異常，請聯絡CAE Team.<br\>${res.message}`, 'error');
+            this._swlService.showSwal('', `pk報表產出異常，請聯絡CAE Team.<br\>${res.message}`, 'error');
           }
 
-          console.log("pk export end.");
           this.isLoading = false;
         })
       }
     }
-  }
+    else if(data.status == UploadType.Fail)
+    {
+      this._swlService.showSwal('', `${data.fileName}上傳失敗,請聯絡CAE Team。${data.message}`, 'error');      
+      this.isLoading = false;
+    }
 
-  //上傳元件的output loading遮罩控制
-  setLoading(event: boolean)
-  {
-    this.notificationB18 = "";
-    this.notificationS18 = "";
-    this.loadingMsg = "檔案上傳中..."
-    this.isLoading = event;
-  }
+  } 
 }

@@ -28,4 +28,12 @@ public partial class XxPor0001_Resell
     public string Updater { get; set; }
 
     public DateTime UpdateTime { get; set; }
+
+    public int? StatusID { get; set; }
+
+    public string ProcureRemark { get; set; }
+
+    public string VendorRemark { get; set; }
+
+    public virtual ICollection<Xx_Po_Receipt> Xx_Po_Receipt { get; set; } = new List<Xx_Po_Receipt>();
 }

@@ -112,6 +112,8 @@ public partial class CAEDB01Context : DbContext
 
             entity.ToTable("XxPor0001_Resell", "LCM");
 
+            entity.HasIndex(e => new { e.OrderNo, e.SOLine }, "xxpor0001_resell_un").IsUnique();
+
             entity.Property(e => e.OrderNo)
                 .IsRequired()
                 .HasMaxLength(20);
@@ -147,6 +149,11 @@ public partial class CAEDB01Context : DbContext
             entity.Property(e => e.Updater)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            entity.HasOne(d => d.XxPor0001_Resell).WithMany(p => p.Xx_Po_Receipt)
+                .HasForeignKey(d => d.XxPor0001_Resell_ID)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("xx_po_receipt_fk");
         });
         modelBuilder.HasSequence("BoxingName_ID_seq", "MachineStockManagement")
             .StartsAt(34L)

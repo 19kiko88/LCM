@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, ViewChild} from '@angular/core';
+import {Component, Input, ViewChild} from '@angular/core';
 import {Router} from '@angular/router';
 import {NavItem} from '../../models/nav-item';
 
@@ -10,13 +10,11 @@ import {NavItem} from '../../models/nav-item';
   templateUrl: './menu-item.component.html',
   styleUrls: ['./menu-item.component.scss']
 })
-export class MenuItemComponent {
-  @Input()items!: NavItem[];
+export class MenuItemComponent 
+{
+  @Input() items: NavItem[]|undefined;
   @ViewChild('childMenu') public childMenu: any;
 
   constructor(public router: Router) {
-  }
-
-  ngOnInit() {
-  }
+  } 
 }

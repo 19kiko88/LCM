@@ -25,7 +25,7 @@ public partial class PnPrice
 
     public int StatusID { get; set; }
 
-    public virtual ICollection<PnEvidence> PnEvidence { get; } = new List<PnEvidence>();
+    public virtual ICollection<PnEvidence> PnEvidence { get; set; } = new List<PnEvidence>();
 
     public virtual Status Status { get; set; }
 }
