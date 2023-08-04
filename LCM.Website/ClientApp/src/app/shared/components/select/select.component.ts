@@ -1,21 +1,24 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-select',
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss']
 })
-export class SelectComponent {
-  public selectedValue: string | undefined
+export class SelectComponent 
+{
+  @Input() public inputOptionData : DropdownOption[] = [{value:"", text:"無"}];
+  selectedValue: string = "";//default selected option value
 
-  @Input() public inputDisplayText: string = "";
-  @Input() public inputOptionData : DropdownOption[] = [{value:"0", text:"無"}];
-  @Output() private outputSelectedValue: EventEmitter<string>  = new EventEmitter();//0:開始上傳 1:上傳完成 -1:上傳失敗
+  //setting Observable
+  private emitSecledtedValue = new Subject<string>();
+  selectedValue$ = this.emitSecledtedValue.asObservable();
 
   onSelected(value: string)
-  {
-    this.selectedValue = value;
-    this.outputSelectedValue?.emit(value);
+  {  
+    //this.selectedValue = value;
+    this.emitSecledtedValue.next(value);
   }
 }
 

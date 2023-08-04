@@ -1,8 +1,9 @@
+import { SelectComponent } from './../../../shared/components/select/select.component';
 import { LoadingService } from './../../../shared/components/loading/loading.service';
 import { LoadingInfo } from './../../../shared/components/loading/loading.component';
 import { ShareService } from './../../../core/service/share.service';
 import { FileInfo } from './../../../shared/models/dto/request/file-info';
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { BsEighteenService } from '../../../core/http/bs-eighteen.service'
 import { DatePipe } from '@angular/common'
 import Swal from 'sweetalert2';
@@ -21,14 +22,15 @@ import { DropdownOption } from 'src/app/shared/components/select/select.componen
 
 export class BsEighteenComponent 
 {  
+  @ViewChild("selectTemplateFileType") selectTemplateFileType?:SelectComponent;
   loadingInfo: LoadingInfo = { isLoading: false}
   notificationS18: string = "";
   notificationB18: string = "";
   notificationPkResult: string = "";
   uploadApiURL: string = "";
-  templateFileType: string = "";
+  templateFileType: string|undefined = "";
   templateFileInfo: string = "";
-  optFilterFile: DropdownOption[] = [
+  optTemplateFileType: DropdownOption[] = [
     {value:"", text:"無"}, 
     {value:"S18", text:"小18"}, 
     {value:"B18", text:"大18"},
@@ -46,7 +48,6 @@ export class BsEighteenComponent
   ngOnInit()
   {
     this.uploadApiURL = `${environment.apiBaseUrl}/BsEighteen/Upload`;
-
   } 
 
   ngAfterViewInit()
@@ -54,6 +55,12 @@ export class BsEighteenComponent
     setTimeout(() => {
       this._shareService.emitChange("大小18報表比對");
     }); 
+
+    //訂閱#selectFilterFileType的selectedValue$
+    this.selectTemplateFileType?.selectedValue$.subscribe(res => {
+      this.templateFileType = res;
+      //console.log(c);
+    })
   }
 
   setUploadInfo(data: UploadInfo)
@@ -160,11 +167,6 @@ export class BsEighteenComponent
       this._loadingService.setLoading(false);
     }
 
-  } 
-
-  setTemplateInfo(event: string)
-  {
-    this.templateFileType = event;
   } 
 
   templateDownload()
