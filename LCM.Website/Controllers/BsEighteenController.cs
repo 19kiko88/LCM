@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using UniversalLibrary.Models;
 using Microsoft.Extensions.Options;
+using System.Data;
 
 using LCM.Services.Models;
 using LCM.Services.Interfaces;
 using LCM.Services.Models.DataTablelHederMapping;
 using LCM.Website.Dtos.Request;
 using LCM.Website.Dtos.Response;
-using LCM.Services.Implements;
+
+
 
 namespace LCM.Website.Controllers
 {
@@ -101,16 +102,29 @@ namespace LCM.Website.Controllers
         [HttpPost]
         public async Task<Result<string>> InsertS18(ReportInfo data)
         {
-            var result = new Result<string>() { };            
-            result.Success = false;
+            var result = new Result<string>() { };
 
             try
             {
                 var fullFilePath = Path.Combine(_optPathSettings.UploadPath, $"{data.FileType}\\{data.FileName}");
-                var dt = await _excelService.ReadExcel<XX_PORT0001_RESELL>(fullFilePath, null, 2);
+                var dt = await _excelService.ReadExcel(fullFilePath, null, 2);
+
                 if (dt != null && dt.Rows.Count > 0)
-                {//bulk insert
-                    result.Content = await _dataService.InsertS18(dt, User.Identity.Name);
+                {
+                    //excel header check
+                    var headerColumnsCheck = await _excelService.ExcelHeaderColumnCheck<XxPort0001Resell>(dt, new string[]
+                    {
+                        "PE No.", "Order Number", "SO Line", "P/N", "Quantity", "Net Price", "Shipment Date", "Date", 
+                    });
+                    if (headerColumnsCheck == false)
+                    {
+                        result.Message = "Excel表頭格式錯誤，請使用系統預設表頭.";
+                        return result;
+                    }
+
+                    //bulk insert
+                    var insertInfo = await _dataService.InsertS18(dt, User.Identity.Name);
+                    result.Content = $"最後上傳時間：{insertInfo.LastUploadDateTime}; ESB日期：{insertInfo.EsbDtStart}~{insertInfo.EsbDtEnd}; 上傳資料筆數：{insertInfo.UploadSuccessCount}/{insertInfo.UploadTotalCount}";
                 }
                 result.Success = true;
             }
@@ -130,15 +144,27 @@ namespace LCM.Website.Controllers
         public async Task<Result<string>> InsertB18(ReportInfo data)
         {
             var result = new Result<string>() { };
-            result.Success = false;
-
             try
             {
                 var fullFilePath = Path.Combine(_optPathSettings.UploadPath, $"{data.FileType}\\{data.FileName}");
-                var dt = await _excelService.ReadExcel<XX_PO_RECEIPT>(fullFilePath, null, 2);
+                var dt = await _excelService.ReadExcel(fullFilePath, null, 1);
+
                 if (dt != null && dt.Rows.Count > 0)
-                {//bulk insert
-                    result.Content = await _dataService.InsertB18(dt, User.Identity.Name);
+                {
+                    //excel header check
+                    var headerColumnsCheck = await _excelService.ExcelHeaderColumnCheck<XxPoReceipt>(dt, new string[]
+                    {
+                        "transaction_id", "po_number", "po_line_num", "po_unit_price", "item", "transaction_date", "last_update_date", "quantity"
+                    });
+                    if (headerColumnsCheck == false)
+                    {
+                        result.Message = "Excel表頭格式錯誤，請使用系統預設表頭.";
+                        return result;
+                    }
+
+                    //bulk insert
+                    var insertInfo = await _dataService.InsertB18(dt, User.Identity.Name);
+                    result.Content = $"最後上傳時間：{insertInfo.LastUploadDateTime}; ESB日期：{insertInfo.EsbDtStart}~{insertInfo.EsbDtEnd}; 上傳資料筆數：{insertInfo.UploadSuccessCount}/{insertInfo.UploadTotalCount}";
                 }
                 result.Success = true;
             }
@@ -164,12 +190,48 @@ namespace LCM.Website.Controllers
             {
                 var fullFilePath = Path.Combine(_optPathSettings.UploadPath, $"{data.FileType}\\{data.FileName}");
                 var dt = await _excelService.ReadExcel(fullFilePath, 16, 1);
+
+                //excel header check
+                var headerColumnsCheck = await _excelService.ExcelHeaderColumnCheck<VendorReport>(dt, new string[]
+                {
+                    "Promised Date", "PE No", "小18 SO Number", "SO Line", "ASUS 小18 P/N", "小18Qty", "Unit Price", "SO Number", "大18 PO Number","大18 PO  Line number","大18 P/N","大18Qty","大18 PO出貨日","大18 PO  Unit Price","Project","Note"
+                });
+                if (headerColumnsCheck == false)
+                {
+                    throw new Exception("Excel表頭格式錯誤，請使用系統預設表頭.");
+                }
+
                 var xlsxContent = await _dataService.GetPkBs18Content(dt);
                 fs = await _excelService.ExportExcel(xlsxContent, fullFilePath);
 
                 //更新小18資料狀態 & 廠商備註欄位
                 _dataService.UserName = User.Identity.Name;
                 await _dataService.UpdateS18(xlsxContent[0], xlsxContent[1]);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return fs;
+        }
+
+        /// <summary>
+        /// 範本檔下載
+        /// </summary>
+        /// <param name="templateType">S18：小18, B18：大18, Vendor：廠商提供報表</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("{templateType?}")]
+        [Filters.Exception]
+        public async Task<FileStreamResult> TemplateFileDownload(string? templateType)
+        {
+            FileStreamResult fs;
+
+            try
+            {
+                var fullFilePath = Path.Combine(_optPathSettings.TemplateFilePath, $"{templateType}.xlsx");
+                fs = await _excelService.ExportExcel(fullFilePath);
             }
             catch (Exception ex)
             {
@@ -194,11 +256,18 @@ namespace LCM.Website.Controllers
             {
                 var fullFilePath = Path.Combine(_optPathSettings.UploadPath, $"{data.UploadFileType}\\{data.FileName}");
                 var sheetCount = Services.Helpers.ExcelHelper.GetSheetCount(fullFilePath);
-                var dt = await _excelService.ReadExcel<PkResultWithError>(fullFilePath, 32, 3, sheetCount);
+                var dt = await _excelService.ReadExcel<PkResultWithError>(fullFilePath, 33, 3, sheetCount);
+
+                //excel header check
+                var headerColumnsCheck = await _excelService.ExcelHeaderColumnCheck<PkResultWithError>(dt);
+                if (headerColumnsCheck == false)
+                {
+                    result.Message = "Excel表頭格式錯誤，請使用系統預設表頭.";
+                    return result;
+                }
 
                 //手動結案
                 var res = await _dataService.ManualClose(dt, User.Identity.Name);
-
                 result.Content = res;
                 result.Success = true;
             }

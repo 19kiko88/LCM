@@ -8,6 +8,8 @@ using LCM.Services.Interfaces;
 using LCM.Services.Models.DataTablelHederMapping;
 using LCM.Services.Models;
 using System.Transactions;
+using LCM.Services.Enums;
+using LCM.Services.Dtos;
 
 namespace LCM.Services.Implements
 {
@@ -27,25 +29,25 @@ namespace LCM.Services.Implements
         /// <param name="dt"></param>
         /// <param name="updateUser"></param>
         /// <returns></returns>
-        public async Task<string> InsertS18(DataTable dt, string updateUser)
+        public async Task<InsertInfo> InsertS18(DataTable dt, string updateUser)
         {
-            var res = "";
-            var s18Header = new XX_PORT0001_RESELL();
+            var res = new InsertInfo();
+            var s18Header = new XxPort0001Resell();
             var listData = new List<XxPor0001_Resell>();
             var updateTime = DateTime.Now;
 
             foreach (var dr in dt.AsEnumerable())
             {
                 Int32.TryParse(dr[s18Header.Quantity].ToString(), out var quantity) ;
-                decimal.TryParse(dr[s18Header.Net_Price].ToString(), out var netPrice) ;
-                DateTime.TryParse(dr[s18Header.Shipment_Date].ToString(), out var shipmentDate);
+                decimal.TryParse(dr[s18Header.NetPrice].ToString(), out var netPrice) ;
+                DateTime.TryParse(dr[s18Header.ShipmentDate].ToString(), out var shipmentDate);
                 DateTime.TryParse(dr[s18Header.Date].ToString(), out var date);
 
                 listData.Add(new XxPor0001_Resell()
                 {
-                    PENo = dr[s18Header.PE_No].ToString(),
-                    OrderNo = CleanOrderNo(dr[s18Header.Order_Number].ToString()),
-                    SOLine = dr[s18Header.SO_Line].ToString(),
+                    PENo = dr[s18Header.PENo].ToString(),
+                    OrderNo = CleanOrderNo(dr[s18Header.OrderNumber].ToString()),
+                    SOLine = dr[s18Header.SOLine].ToString(),
                     PartNo = dr[s18Header.PN].ToString(),
                     Quantity = quantity,
                     NetPrice = netPrice,
@@ -53,7 +55,7 @@ namespace LCM.Services.Implements
                     SystemUpdateDate = DateOnly.FromDateTime(date),
                     Updater = updateUser,
                     UpdateTime = updateTime,
-                    StatusID = 1//尚未結案
+                    StatusID = (int?)StatusId.NoneClose
                 });
             }
 
@@ -70,10 +72,12 @@ namespace LCM.Services.Implements
             //Ref：https://stackoverflow.com/questions/6651809/sqlbulkcopy-insert-with-identity-column
             var config = new BulkConfig { SetOutputIdentity = false, BatchSize = 500000, UseTempDB = true };
             _context.BulkInsert(listWithoutDuplicateData, config);
-            
-            var esbDTStart = Convert.ToDateTime(listData.Select(c => c.SystemUpdateDate).Min().ToShortDateString()) == DateTime.MinValue ? "" : listData.Select(c => c.SystemUpdateDate).Min().ToShortDateString();
-            var esbDTSEnd = Convert.ToDateTime(listData.Select(c => c.SystemUpdateDate).Max().ToShortDateString()) == DateTime.MinValue ? "" : listData.Select(c => c.SystemUpdateDate).Max().ToShortDateString();
-            res = $"最後上傳時間：{updateTime}; ESB日期：{esbDTStart}~{esbDTSEnd}; 上傳資料筆數：{listWithoutDuplicateData.Count}/{listData.Count}";
+
+            res.LastUploadDateTime = updateTime;
+            res.EsbDtStart = Convert.ToDateTime(listData.Select(c => c.SystemUpdateDate).Min().ToShortDateString()) == DateTime.MinValue ? "" : listData.Select(c => c.SystemUpdateDate).Min().ToShortDateString();
+            res.EsbDtEnd = Convert.ToDateTime(listData.Select(c => c.SystemUpdateDate).Max().ToShortDateString()) == DateTime.MinValue ? "" : listData.Select(c => c.SystemUpdateDate).Max().ToShortDateString();
+            res.UploadSuccessCount = listWithoutDuplicateData.Count;
+            res.UploadTotalCount = listData.Count;
 
             return res;
         }
@@ -84,33 +88,33 @@ namespace LCM.Services.Implements
         /// <param name="dt"></param>
         /// <param name="updateUser"></param>
         /// <returns></returns>
-        public async Task<string> InsertB18(DataTable dt, string updateUser)
+        public async Task<InsertInfo> InsertB18(DataTable dt, string updateUser)
         {
-            var res = "";
-            var b18Header = new XX_PO_RECEIPT();
+            var res = new InsertInfo();
+            var b18Header = new XxPoReceipt();
             var listData = new List<Xx_Po_Receipt>();
             var updateTime = DateTime.Now;
             var lastUpdateTime = DateTime.MinValue;
 
             foreach (var dr in dt.AsEnumerable())
             {
-                Int32.TryParse(dr[b18Header.Po_Line_Num].ToString(), out var poLineNumber);
+                Int32.TryParse(dr[b18Header.PoLineNum].ToString(), out var poLineNumber);
                 Int32.TryParse(dr[b18Header.Quantity].ToString(), out var quantity);
-                decimal.TryParse(dr[b18Header.Po_Unit_Price].ToString(), out var poUnitPrice);
-                DateTime.TryParse(dr[b18Header.Transaction_Date].ToString(), out var transactionDate);
+                decimal.TryParse(dr[b18Header.PoUnitPrice].ToString(), out var poUnitPrice);
+                DateTime.TryParse(dr[b18Header.TransactionDate].ToString(), out var transactionDate);
 
-                if (!DateTime.TryParse(dr[b18Header.Last_Update_Date].ToString(), out lastUpdateTime))
+                if (!DateTime.TryParse(dr[b18Header.SystemUpdateDate].ToString(), out lastUpdateTime))
                 {//大18的lastUpdateTime格式有可能為數值或是時間格式，數值的話要在轉時間格式
-                    lastUpdateTime = DateTime.FromOADate(Convert.ToDouble(dr[b18Header.Last_Update_Date]));
+                    lastUpdateTime = DateTime.FromOADate(Convert.ToDouble(dr[b18Header.SystemUpdateDate]));
                 }                
 
                 listData.Add(new Xx_Po_Receipt()
                 {
-                    TransactionID = dr[b18Header.Transaction_Id].ToString(),
-                    PONo = dr[b18Header.Po_Number].ToString(),
+                    TransactionID = dr[b18Header.TransactionId].ToString(),
+                    PONo = dr[b18Header.PoNumber].ToString(),
                     POLineNo = poLineNumber,
                     POUnitPrice = poUnitPrice,
-                    PartNo = dr[b18Header.Item].ToString(),
+                    PartNo = dr[b18Header.PartNo].ToString(),
                     TransactionDate = DateOnly.FromDateTime(transactionDate),                    
                     SystemUpdateDate = DateOnly.FromDateTime(lastUpdateTime),
                     Updater = updateUser,
@@ -134,7 +138,12 @@ namespace LCM.Services.Implements
 
             var dataMarketDTStart = Convert.ToDateTime(listData.Select(c => c.SystemUpdateDate).Min().ToShortDateString()) == DateTime.MinValue ? "" : listData.Select(c => c.SystemUpdateDate).Min().ToShortDateString();
             var dataMarketDTEnd = Convert.ToDateTime(listData.Select(c => c.SystemUpdateDate).Max().ToShortDateString()) == DateTime.MinValue ? "" : listData.Select(c => c.SystemUpdateDate).Max().ToShortDateString();
-            res = $"最後上傳時間：{updateTime}; ESB日期：{dataMarketDTStart}~{dataMarketDTEnd}; 上傳資料筆數：{listWithoutDuplicateData.Count}/{listData.Count}";
+
+            res.LastUploadDateTime = updateTime;
+            res.EsbDtStart = Convert.ToDateTime(listData.Select(c => c.SystemUpdateDate).Min().ToShortDateString()) == DateTime.MinValue ? "" : listData.Select(c => c.SystemUpdateDate).Min().ToShortDateString();
+            res.EsbDtEnd = Convert.ToDateTime(listData.Select(c => c.SystemUpdateDate).Max().ToShortDateString()) == DateTime.MinValue ? "" : listData.Select(c => c.SystemUpdateDate).Max().ToShortDateString();
+            res.UploadSuccessCount = listWithoutDuplicateData.Count;
+            res.UploadTotalCount = listData.Count;
 
             return res;
         }
@@ -146,7 +155,8 @@ namespace LCM.Services.Implements
         /// <returns></returns>
         public async Task<List<List<PK_RESULT_REPORT>>> GetPkBs18Content(DataTable dt)
         {
-            var vendorReportHeader = new LCM.Services.Models.DataTablelHederMapping.VENDOR_REPORT();
+            var poStatus = _context.PoStatusDesc.ToList();
+            var vendorReportHeader = new VendorReport();
             var listData = new List<LCM.Services.Models.VENDOR_REPORT>();
             var currentPE_No = "";
             var currentSO = "";
@@ -158,6 +168,7 @@ namespace LCM.Services.Implements
             if (dt != null && dt.Rows.Count > 0)
             {
                 #region 廠商提供報表轉物件 VENDER_REPORT
+                var serial = 0;
                 foreach (var dr in dt.AsEnumerable())
                 {
                     if (
@@ -177,12 +188,22 @@ namespace LCM.Services.Implements
                     Int32.TryParse(dr[vendorReportHeader.S18_Qty].ToString(), out var s18_Qty);
                     decimal.TryParse(dr[vendorReportHeader.S18_Unit_Price].ToString(), out var s18oUnitPrice);
                     Int32.TryParse(dr[vendorReportHeader.B18_PO_Line_No].ToString(), out var b18_PoLineNo);
-                    Int32.TryParse(dr[vendorReportHeader.B18_Qty].ToString(), out var b18_Qty);
-                    DateTime.TryParse(dr[vendorReportHeader.B18_PO_Shipment_Date].ToString(), out var b18_PoShipmentDate);
+                    var checkB18_Qty = Int32.TryParse(dr[vendorReportHeader.B18_Qty].ToString(), out var b18_Qty);
+                    var checkB18_PO_Shipment_Date = DateTime.TryParse(dr[vendorReportHeader.B18_PO_Shipment_Date].ToString(), out var b18_PoShipmentDate);
                     decimal.TryParse(dr[vendorReportHeader.B18_PO_Unit_Price].ToString(), out var b18_PoUnitPrice);
 
-                    listData.Add(new LCM.Services.Models.VENDOR_REPORT()
+
+                    if (
+                        !string.IsNullOrEmpty(dr[vendorReportHeader.S18_PE_No].ToString()?.Trim()) &&
+                        !string.IsNullOrEmpty(dr[vendorReportHeader.S18_SO_No].ToString()?.Trim()) &&
+                        !string.IsNullOrEmpty(dr[vendorReportHeader.S18_SO_Line].ToString()?.Trim())
+                        )
                     {
+                        serial++;
+                    }
+
+                    listData.Add(new VENDOR_REPORT()
+                    {                       
                         S18_Promised_Date = DateOnly.FromDateTime(s18_Promised_Date),
                         S18_PE_No = dr[vendorReportHeader.S18_PE_No].ToString()?.Trim(),
                         S18_SO_No = dr[vendorReportHeader.S18_SO_No].ToString()?.Trim(),
@@ -196,39 +217,61 @@ namespace LCM.Services.Implements
                         B18_PO_Line_No = b18_PoLineNo,
                         B18_PN = dr[vendorReportHeader.B18_PN].ToString()?.Trim(),
                         B18_Qty = b18_Qty,
+                        B18_Qty_String = checkB18_Qty ? "" : dr[vendorReportHeader.B18_Qty].ToString(),
                         B18_PO_Shipment_Date = DateOnly.FromDateTime(b18_PoShipmentDate),
+                        B18_PO_Shipment_Date_String = checkB18_PO_Shipment_Date ? b18_PoShipmentDate.ToString("yyyy/MM/dd") : dr[vendorReportHeader.B18_PO_Shipment_Date].ToString(),                            
                         B18_PO_Unit_Price = b18_PoUnitPrice,
                         B18_Project = dr[vendorReportHeader.B18_Project].ToString()?.Trim(),
-                        B18_Note = dr[vendorReportHeader.B18_Note].ToString()?.Trim()
+                        B18_Note = dr[vendorReportHeader.B18_Note].ToString()?.Trim(),
+                        SN = serial
                     });
                 }
                 #endregion
 
                 #region 轉換成要輸出的格式
-                var s18VendorReportData = listData.Select((c, serialNo) => new
-                {
-                    SN = serialNo,
-                    c.S18_Promised_Date,
-                    c.S18_PE_No,
-                    c.S18_SO_No,
-                    c.S18_SO_Line,
-                    c.S18_PN,
-                    c.S18_Qty,
-                    c.S18_Unit_Price
-                }).Where(c => !string.IsNullOrEmpty(c.S18_SO_No) && !string.IsNullOrEmpty(c.S18_SO_Line)).OrderBy(c => c.SN);
+                var s18VendorReportData =
+                    listData
+                    .Select((c, serialNo) => new
+                    {
+                        SN = serialNo,
+                        c.S18_Promised_Date,
+                        c.S18_PE_No,
+                        c.S18_SO_No,
+                        c.S18_SO_Line,
+                        c.S18_PN,
+                        c.S18_Qty,
+                        c.S18_Unit_Price
+                    })
+                    .Where(c => !string.IsNullOrEmpty(c.S18_SO_No) && !string.IsNullOrEmpty(c.S18_SO_Line)).OrderBy(c => c.SN)
+                    .GroupBy(g => new { g.S18_PE_No, g.S18_SO_No, g.S18_SO_Line })
+                    .Select(c =>
+                    new
+                    {
+                        SN = c.Select(s => s.SN).FirstOrDefault(),
+                        S18_Promised_Date = c.Select(s => s.S18_Promised_Date).FirstOrDefault(),
+                        c.Key.S18_PE_No,
+                        c.Key.S18_SO_No,
+                        c.Key.S18_SO_Line,
+                        S18_PN = c.Select(s => s.S18_PN).FirstOrDefault(),
+                        S18_Qty = c.Sum(s => s.S18_Qty),
+                        S18_Unit_Price = c.Select(s => s.S18_Unit_Price).FirstOrDefault()
+                    })
+                    ;
 
                 var b18VendorReportData = listData.Select((c, serialNo) => new
                 {
-                    SN = serialNo,
                     c.B18_SO_No,
                     c.B18_SO_Line,
                     c.B18_PO_No,
                     c.B18_PO_Line_No,
                     c.B18_PN,
                     c.B18_Qty,
+                    c.B18_Qty_String,
                     c.B18_PO_Shipment_Date,
+                    c.B18_PO_Shipment_Date_String,
                     c.B18_PO_Unit_Price,
-                    c.B18_Note
+                    c.B18_Note,
+                    c.B18_Project
                 });
 
                 var dbS18 = new XxPor0001_Resell();
@@ -257,20 +300,37 @@ namespace LCM.Services.Implements
                     data.DB_S18_PartNo = StringPK(s18_V_Item.S18_PN, dbS18?.PartNo?.Trim(), ref errorCount);
                     data.DB_S18_Quantity = StringPK(s18_V_Item.S18_Qty.ToString(), dbS18?.Quantity.ToString()?.Trim(), ref errorCount);
                     data.DB_S18_NetPrice = StringPK(s18_V_Item.S18_Unit_Price.ToString(), dbS18?.NetPrice.ToString()?.Trim(), ref errorCount);
-                    data.DB_S18_ShipmentDate = string.IsNullOrEmpty(dbS18?.ShipmentDate.ToString("yyyy/MM/dd")) ? string.Concat("No Data", EXCEL_CELL_STYLE.Waring) : dbS18?.ShipmentDate.ToString("yyyy/MM/dd");
+                    data.DB_S18_ShipmentDate = string.IsNullOrEmpty(dbS18?.ShipmentDate.ToString("yyyy/MM/dd")) ? string.Concat("No Data", ExcelCellStyle.Waring) : dbS18?.ShipmentDate.ToString("yyyy/MM/dd");
+                    data.MANUAL_CLOSED_NOTE = dbS18?.ProcureRemark??string.Empty;
+                    data.HiddenS18StatusId = dbS18 != null && dbS18.StatusID.HasValue ? dbS18.StatusID.Value : (int)StatusId.NoneClose;//  (int)StatusId.NoneClose ;
 
                     var b18_V_Items = b18VendorReportData
                         .Where(c => c.B18_SO_No == s18_V_Item.S18_SO_No && c.B18_SO_Line == s18_V_Item.S18_SO_Line)
-                        .OrderBy(c => c.SN)
+                        .OrderBy(o => o.B18_PO_Shipment_Date).ThenBy(o => o.B18_PO_No).ThenBy(o => o.B18_PO_Line_No)
                         .ToList();
 
                     if (b18_V_Items.Count > 0)
                     {//大18資料處理
-                        var sn = 1;
+
+                        var sn = 0;
+                        var needMerge = false;
+                        var mergeString = "";
+                        var b18Group = b18_V_Items.GroupBy(g => new { g.B18_PO_Shipment_Date, g.B18_PO_No, g.B18_PO_Line_No }).Select(c => new
+                        {
+                            c.Key.B18_PO_Shipment_Date,
+                            c.Key.B18_PO_No,
+                            c.Key.B18_PO_Line_No,
+                            SumQty = c.Sum(s => s.B18_Qty),
+                            CNT = c.Count()
+                        }).Where(c => c.CNT > 1).ToList();
+
+
                         foreach (var b18_V_Item in b18_V_Items)
                         {
+                            sn++;
+
                             /*
-                             * 大18資料取TransactionDate大於廠商提供之交貨日，且TransactionDate離交貨日最近之資料。
+                             * DB資料有一筆以上時，大18資料取TransactionDate大於廠商提供之交貨日，且TransactionDate離交貨日最近之資料。
                              * by bruenor 20230711
                              */
                             dbB18 = _context.Xx_Po_Receipt.Where(c => 
@@ -286,56 +346,115 @@ namespace LCM.Services.Implements
                                 data = new PK_RESULT_REPORT();
                             }
 
-                            //廠商提供大18 PO出貨日 & Transaction_Date比對
-                            if (dbB18?.TransactionDate < b18_V_Item.B18_PO_Shipment_Date.AddDays(180))
-                            {//Transaction_Date在PO出貨日加180天內 => 比對正常
-                                data.V_B18_PO_Shipment_Date = string.Concat(b18_V_Item.B18_PO_Shipment_Date.ToString("yyyy/MM/dd"), EXCEL_CELL_STYLE.FormatCnMD);
+                            #region 大18DB資料合併儲存格
+                            var mergeCount =
+                                b18Group
+                                .Where(c => c.B18_PO_Shipment_Date == b18_V_Item.B18_PO_Shipment_Date && c.B18_PO_No == b18_V_Item.B18_PO_No && c.B18_PO_Line_No == b18_V_Item.B18_PO_Line_No)
+                                .FirstOrDefault()?.CNT;
+
+                            if (mergeCount > 1 && string.IsNullOrEmpty(mergeString))
+                            {
+                                needMerge = true;
+                                mergeString = $"{ExcelCellStyle.MergeDown}▼{(mergeCount) - 1}";
+
+                                dbB18QtySum += b18Group.FirstOrDefault()?.SumQty ?? 0;
                             }
                             else
-                            {//Transaction_Date超出PO出貨日加180天 => 比對異常
-                                data.V_B18_PO_Shipment_Date = string.Concat(b18_V_Item.B18_PO_Shipment_Date.ToString("yyyy/MM/dd"), EXCEL_CELL_STYLE.Waring, EXCEL_CELL_STYLE.FormatCnMD);
-                                errorCount++;
+                            {
+                                needMerge = false;
+                                mergeString = "";
+                            }
+                            #endregion
+
+                            //廠商提供大18 PO出貨日 & Transaction_Date比對
+                            if (!DateTime.TryParse(b18_V_Item.B18_PO_Shipment_Date_String, out var shipDate))
+                            {//大18 PO出貨日不為日期格式
+                                data.V_B18_PO_Shipment_Date = string.Concat(b18_V_Item.B18_PO_Shipment_Date_String, ExcelCellStyle.Waring, ExcelCellStyle.FormatCnMD);
+                            }
+                            else
+                            {
+                                if (dbB18?.TransactionDate < b18_V_Item.B18_PO_Shipment_Date.AddDays(180))
+                                {//Transaction_Date在PO出貨日加180天內 => 比對正常
+                                    data.V_B18_PO_Shipment_Date = string.Concat(b18_V_Item.B18_PO_Shipment_Date.ToString("yyyy/MM/dd"), ExcelCellStyle.FormatCnMD);
+                                }
+                                else
+                                {//Transaction_Date超出PO出貨日加180天 => 比對異常
+                                    data.V_B18_PO_Shipment_Date = string.Concat(b18_V_Item.B18_PO_Shipment_Date.ToString("yyyy/MM/dd"), ExcelCellStyle.Waring, ExcelCellStyle.FormatCnMD);
+                                    errorCount++;
+                                }
                             }
 
                             data.V_B18_SO_No = b18_V_Item.B18_SO_No;
                             data.V_B18_PO_No = b18_V_Item.B18_PO_No;
                             data.V_B18_PO_Line_No = b18_V_Item.B18_PO_Line_No > 0 ? b18_V_Item.B18_PO_Line_No.ToString() : "";
                             data.V_B18_PN = b18_V_Item.B18_PN;
-                            data.V_B18_Qty = b18_V_Item.B18_Qty.ToString();
+                            data.V_B18_Qty = string.IsNullOrEmpty(b18_V_Item.B18_Qty_String) ? b18_V_Item.B18_Qty.ToString() : b18_V_Item.B18_Qty_String;
                             data.V_B18_PO_Unit_Price = b18_V_Item.B18_PO_Unit_Price.ToString();
 
                             //DB大18
-                            data.DB_B18_PONo = StringPK(b18_V_Item.B18_PO_No, dbB18?.PONo.Trim(), ref errorCount);
-                            data.DB_B18_POLineNo = StringPK(b18_V_Item.B18_PO_Line_No.ToString(), dbB18?.POLineNo.ToString()?.Trim(), ref errorCount);
-                            data.DB_B18_PartNo = StringPK(b18_V_Item.B18_PN, dbB18?.PartNo?.Trim()!, ref errorCount);
-                            data.DB_B18_Quantity = StringPK(b18_V_Item.B18_Qty.ToString(), dbB18?.Quantity.ToString()?.Trim(), ref errorCount);
-                            if (dbB18 != null)
+                            data.DB_B18_PONo = StringPK(b18_V_Item.B18_PO_No, dbB18?.PONo.Trim(), ref errorCount, mergeString);
+                            data.DB_B18_POLineNo = StringPK(b18_V_Item.B18_PO_Line_No.ToString(), dbB18?.POLineNo.ToString()?.Trim(), ref errorCount, mergeString);
+                            data.DB_B18_PartNo = StringPK(b18_V_Item.B18_PN, dbB18?.PartNo?.Trim()!, ref errorCount, mergeString);
+
+                            //DB_B18_Quantity
+                            if (needMerge == false)
                             {
-                                dbB18QtySum += dbB18.Quantity;
+                                data.DB_B18_Quantity = StringPK(b18_V_Item.B18_Qty.ToString(), dbB18?.Quantity.ToString()?.Trim(), ref errorCount, mergeString);
+                                dbB18QtySum += dbB18?.Quantity ?? 0;
                             }
-                            data.DB_B18_POUnitPrice = StringPK(b18_V_Item.B18_PO_Unit_Price.ToString(), dbB18?.POUnitPrice.ToString()!, ref errorCount);
-                            data.DB_B18_TransactionDate = string.IsNullOrEmpty(dbB18?.TransactionDate.ToString("yyyy/MM/dd")) ? string.Concat("No Data", EXCEL_CELL_STYLE.Waring) : dbB18?.TransactionDate.ToString("yyyy/MM/dd");
+                            else
+                            {
+                                var dbSum = ""; 
+                                if (dbB18 != null)
+                                {
+                                    dbSum = dbB18?.Quantity.ToString();
+                                }
+
+                                data.DB_B18_Quantity = StringPK(b18Group.FirstOrDefault()?.SumQty.ToString() ?? 0.ToString(), dbSum, ref errorCount, mergeString);
+                            }
+
+                            data.DB_B18_POUnitPrice = StringPK(b18_V_Item.B18_PO_Unit_Price.ToString(), dbB18?.POUnitPrice.ToString()!, ref errorCount, mergeString);
+                            data.DB_B18_TransactionDate = string.IsNullOrEmpty(dbB18?.TransactionDate.ToString("yyyy/MM/dd")) ? string.Concat("No Data", ExcelCellStyle.Waring, mergeString) : string.Concat(dbB18?.TransactionDate.ToString("yyyy/MM/dd"), mergeString);
+                            data.V_B18_Project = b18_V_Item.B18_Project;
                             data.V_B18_Note = b18_V_Item.B18_Note;
 
+                            //隱藏欄位
                             data.HiddenSONo = s18_V_Item.S18_SO_No;
                             data.HiddenSOLineNo = s18_V_Item.S18_SO_Line;
                             data.HiddenTransactionId = dbB18?.TransactionID;
 
                             listPkResult.Add(data);
-                            sn ++;
                         }
                     }                    
                     else
                     {
+                        //隱藏欄位
                         data.HiddenSONo = s18_V_Item.S18_SO_No;
                         data.HiddenSOLineNo = s18_V_Item.S18_SO_Line;
+
                         listPkResult.Add(data);
                     }
 
-                    if (b18_V_Items.Count > 0 && dbB18QtySum == s18_V_Item.S18_Qty)
+                    if (
+                        (dbS18 != null && dbS18.StatusID == (int?)StatusId.ManualClose) ||
+                        (b18_V_Items.Count > 0 && dbB18QtySum == s18_V_Item.S18_Qty)
+                    )
                     {//DB大18 Qty加總等於廠商提供小18 Qty => 增加結案列
-                        listPkResult.Add(new PK_RESULT_REPORT { PK_RESULT = string.Concat(dbB18QtySum.ToString(), EXCEL_CELL_STYLE.Waring) });
-                        listPkResult.Add(new PK_RESULT_REPORT { PK_RESULT = string.Concat(errorCount == 0 ? "結案" : "結案，但比對資料異常", EXCEL_CELL_STYLE.Waring) });
+                        listPkResult.Add(new PK_RESULT_REPORT { PK_RESULT = string.Concat(dbB18QtySum.ToString(), ExcelCellStyle.Waring) });
+
+                        var status = poStatus.Where(c => c.ID == (int)StatusId.AutoClose).FirstOrDefault()?.Description;//自動結案;
+
+                        if (errorCount > 0)
+                        {//自動結案，但比對資料異常
+                            status = $"{status}，但比對資料異常";
+                        }
+
+                        if (dbS18 != null && dbS18.StatusID == (int)StatusId.ManualClose)
+                        {//手動結案
+                            status = poStatus.Where(c => c.ID == (int)StatusId.ManualClose).FirstOrDefault()?.Description;
+                        }
+
+                        listPkResult.Add(new PK_RESULT_REPORT { PK_RESULT = string.Concat(status, ExcelCellStyle.Waring) });
                         errorCount = 0;
                     }
                     else
@@ -359,19 +478,12 @@ namespace LCM.Services.Implements
                         listPkResult_NoneClose.AddRange(listPkResult);
 
                         var s18DbData = _context.XxPor0001_Resell.Where(c => c.OrderNo == listPkResult_NoneClose[idx].V_S18_SO_No && c.SOLine == listPkResult_NoneClose[idx].V_S18_SO_Line).FirstOrDefault();
-                        if (s18DbData != null) 
-                        {
-                            var isManualClose = "否";
-                            if (s18DbData.StatusID == 555)
-                            {//人工結案
-                                isManualClose = "是";
-                            }
-                            listPkResult_NoneClose[idx].PK_RESULT = string.Concat(isManualClose, EXCEL_CELL_STYLE.DropDownList);
-                            listPkResult_NoneClose[idx].MANUAL_CLOSED_NOTE = s18DbData.ProcureRemark;
-                        }
-                        else
-                        {
-                            listPkResult_NoneClose[idx].PK_RESULT = string.Concat("否", EXCEL_CELL_STYLE.DropDownList);
+                        listPkResult_NoneClose[idx].MANUAL_CLOSED_NOTE = s18DbData?.ProcureRemark;
+                        listPkResult_NoneClose[idx].PK_RESULT = s18DbData != null ? string.Concat("否", ExcelCellStyle.DropDownList) : "資料庫查無小18資料，無法手動結案";
+
+                        if (listPkResult_NoneClose[idx].HiddenS18StatusId != (int)StatusId.NoneClose)
+                        {//已經於其他廠商提供報表轉結案
+                            listPkResult_NoneClose[idx].PK_RESULT = $"此SO NO + SO line已於先前{poStatus.Where(c => c.ID == listPkResult_NoneClose[idx].HiddenS18StatusId).FirstOrDefault()?.Description}，但此次比對資料異常";
                         }
                     }
                 }
@@ -437,18 +549,18 @@ namespace LCM.Services.Implements
 
                                 if (s18DbData != null)
                                 {
-                                    if (s18DbData.StatusID == 1 && currentIsManualClose == "是")
+                                    if (s18DbData.StatusID == (int)StatusId.NoneClose && currentIsManualClose == "是")
                                     {//未結案 => 人工結案
                                         needUpdate = true;
-                                        statusId = 555;//人工結案
+                                        statusId = (int)StatusId.ManualClose;//人工結案
                                         id = s18DbData.ID;
                                     }
-                                    else if (s18DbData.StatusID == 555 && currentIsManualClose == "否")
-                                    {//人工結案 => 未結案
-                                        needUpdate = true;
-                                        statusId = 1;//尚未結案
-                                        id = null;
-                                    }
+                                    //else if (s18DbData.StatusID == (int)StatusId.AutoClose && currentIsManualClose == "否")
+                                    //{//人工結案 => 未結案
+                                    //    needUpdate = true;
+                                    //    statusId = (int)StatusId.NoneClose;//尚未結案
+                                    //    id = null;
+                                    //}
 
                                     if (needUpdate == true)
                                     {
@@ -503,17 +615,19 @@ namespace LCM.Services.Implements
         public async Task<int> UpdateS18(List<PK_RESULT_REPORT> closeData, List<PK_RESULT_REPORT> noneCloseData)
         {
             var res = 0;
+            var filterCloseData = closeData.Where(c => c.HiddenS18StatusId == (int)StatusId.NoneClose).ToList();
+            var filterNoneCloseData = noneCloseData.Where(c => c.HiddenS18StatusId == (int)StatusId.NoneClose).ToList();
 
             using (var ts = _context.Database.BeginTransaction())
             {
                 try
                 {
-                    foreach (var item in closeData)
+                    foreach (var item in filterCloseData)
                     {
                         var s18DbData = _context.XxPor0001_Resell.Where(c => c.OrderNo == item.V_S18_SO_No && c.SOLine == item.V_S18_SO_Line).FirstOrDefault();
                         if (s18DbData != null)
                         {
-                            s18DbData.StatusID = 666;//自動結案
+                            s18DbData.StatusID = (int?)StatusId.AutoClose;//自動結案
                             if (item.V_B18_Note?.IndexOf(',') > 0)
                             {//刪除合併字串，更新廠商備註欄位
                                 s18DbData.VendorRemark = item.V_B18_Note.Split(',')[0];
@@ -521,7 +635,7 @@ namespace LCM.Services.Implements
                             s18DbData.Updater = UserName;
                             s18DbData.UpdateTime = DateTime.Now;
 
-                            var b18Data = closeData.Where(c => c.HiddenSONo == item.V_S18_SO_No && c.HiddenSOLineNo == item.V_S18_SO_Line).Select(c => c.HiddenTransactionId).ToArray();
+                            var b18Data = filterCloseData.Where(c => c.HiddenSONo == item.V_S18_SO_No && c.HiddenSOLineNo == item.V_S18_SO_Line).Select(c => c.HiddenTransactionId).ToArray();
                             var b18DbData = _context.Xx_Po_Receipt.Where(c => b18Data.Contains(c.TransactionID));
                             foreach (var itemDbB18 in b18DbData)
                             {
@@ -532,12 +646,12 @@ namespace LCM.Services.Implements
                         }
                     }
 
-                    foreach (var item in noneCloseData)
+                    foreach (var item in filterNoneCloseData)
                     {
                         var s18DbData = _context.XxPor0001_Resell.Where(c => c.OrderNo == item.V_S18_SO_No && c.SOLine == item.V_S18_SO_Line).FirstOrDefault();
                         if (s18DbData != null)
                         {
-                            s18DbData.StatusID = 1;//尚未結案
+                            s18DbData.StatusID = (int?)StatusId.NoneClose;//尚未結案
                             if (item.V_B18_Note?.IndexOf(',') > 0)
                             {//刪除合併字串，更新廠商備註欄位
                                 s18DbData.VendorRemark = item.V_B18_Note.Split(',')[0];
@@ -566,16 +680,16 @@ namespace LCM.Services.Implements
         /// <param name="strPK"></param>
         /// <param name="errorCount"></param>
         /// <returns></returns>
-        private string StringPK(string strOriginal, string strPK, ref int errorCount) 
+        private string StringPK(string strOriginal, string strPK, ref int errorCount, string mergeString = "")
         {
             if (strOriginal != strPK)
             {                
                 errorCount++;
                 strPK = string.IsNullOrEmpty(strPK) ? "No Data" : strPK;
-                return string.Concat(strPK, EXCEL_CELL_STYLE.Waring);
+                return string.Concat(strPK, ExcelCellStyle.Waring, mergeString);
             }
 
-            return strOriginal;
+            return string.Concat(strOriginal, mergeString);
         }
 
         /// <summary>
@@ -610,7 +724,7 @@ namespace LCM.Services.Implements
                 b => new { b.SONo, b.SOLineNo },
                 (a, b) => new { 
                     DATA = b, 
-                    NEW_NOTE = string.Concat(b.Note, $"{EXCEL_CELL_STYLE.Merge}▲{a.SN}▼{(a.SN + b.Count) - 1}") 
+                    NEW_NOTE = string.Concat(b.Note, $"{ExcelCellStyle.MergeNote}▲{a.SN}▼{(a.SN + b.Count) - 1}") 
                 });
 
 

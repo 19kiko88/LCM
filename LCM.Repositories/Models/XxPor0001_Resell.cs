@@ -35,5 +35,7 @@ public partial class XxPor0001_Resell
 
     public string VendorRemark { get; set; }
 
+    public virtual PoStatusDesc Status { get; set; }
+
     public virtual ICollection<Xx_Po_Receipt> Xx_Po_Receipt { get; set; } = new List<Xx_Po_Receipt>();
 }

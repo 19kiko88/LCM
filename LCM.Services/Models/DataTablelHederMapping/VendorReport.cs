@@ -1,6 +1,6 @@
 ﻿namespace LCM.Services.Models.DataTablelHederMapping
 {
-    public class VENDOR_REPORT
+    public class VendorReport
     {
         /// <summary>
         /// Promised Date

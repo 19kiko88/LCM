@@ -1,5 +1,4 @@
-import {Component} from '@angular/core';
-//import {VERSION} from '@angular/material';
+import { ChangeDetectorRef, Component, AfterViewInit } from '@angular/core';
 import {NavItem} from '../../shared/models/nav-item';
 
 @Component({
@@ -7,8 +6,11 @@ import {NavItem} from '../../shared/models/nav-item';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent {
-  //version = VERSION;
+export class HeaderComponent implements AfterViewInit {
+
+  constructor(
+    private cd: ChangeDetectorRef
+    ){}
 
   navItems: NavItem[] = [
     {
@@ -18,22 +20,22 @@ export class HeaderComponent {
       children: [
         {
           displayName: '大小18比對',
-          iconName: 'label_important',  
+          iconName: 'chevron_right',  
           route: 'bs18',
         },
         {
           displayName: '手動結案',
-          iconName: 'label_important',  
+          iconName: 'chevron_right',  
           route: 'manual_close',
         },
         {
           displayName: '大小18比對/手動結案(tab ver.)',
-          iconName: 'label_important',  
-          route: 'main',
+          iconName: 'chevron_right',  
+          route: 'tab',
         }
       ]
-    },
-    // {
+    }
+    // ,{
     //   displayName: '測試第一階功能',
     //   iconName: 'close',
     //   route: 'main',
@@ -46,5 +48,14 @@ export class HeaderComponent {
     //   ]
     // }
   ]
+
+  ngAfterViewInit(): void 
+  {
+    /*
+    *解決 NG0100: ExpressionChangedAfterItHasBeenCheckedError
+    *Ref：https://juejin.cn/post/6844903582555176973
+    */
+    this.cd.detectChanges();
+  }
 }
 

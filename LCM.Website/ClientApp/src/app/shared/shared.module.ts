@@ -7,15 +7,17 @@ import { SharedNgbootstrapModule } from './shared-ngbootstrap/shared-ngbootstrap
 import { LoadingComponent } from './components/loading/loading.component';
 import { NewUploadComponent } from './components/new-upload/new-upload.component';
 import { UploadComponent } from './components/upload/upload.component';
+import { MatCardModule } from '@angular/material/card';
+import { SelectComponent } from './components/select/select.component';
 
 @NgModule({
-  declarations: [MenuItemComponent, UploadComponent, LoadingComponent, LoadingComponent, NewUploadComponent],
+  declarations: [MenuItemComponent, UploadComponent, LoadingComponent, LoadingComponent, NewUploadComponent, SelectComponent],
   imports: [
     CommonModule,
     SharedNgMaterialModule,
     SharedNgbootstrapModule,
     RouterModule
   ],
-  exports:[MenuItemComponent, UploadComponent, NewUploadComponent, LoadingComponent]
+  exports:[MenuItemComponent, UploadComponent, NewUploadComponent, LoadingComponent, SelectComponent, MatCardModule]
 })
 export class SharedModule { }

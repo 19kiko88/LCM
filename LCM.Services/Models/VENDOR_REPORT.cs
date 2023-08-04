@@ -54,10 +54,12 @@
         /// Qty
         /// </summary>
         public int B18_Qty { get; set; }
+        public string B18_Qty_String { get; set; }
         /// <summary>
         /// 大18 PO出貨日
         /// </summary>
         public DateOnly B18_PO_Shipment_Date { get; set; }
+        public string B18_PO_Shipment_Date_String { get; set; }
         /// <summary>
         /// 大18 PO Unit Price
         /// </summary>
@@ -70,5 +72,6 @@
         /// Note
         /// </summary>
         public string B18_Note { get; set; }
+        public int SN { get; set; }
     }
 }

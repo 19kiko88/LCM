@@ -1,0 +1,15 @@
+<form class="row g-3">
+	<div class="form-row">
+		<div class="col-md-6 col-sm-12">
+	  		<label class="form-label">未結案資料：</label>
+              <app-new-upload 
+              #uploadBatchFile
+              [inputApiUrl] = "uploadApiURL +'/MC'"
+              (outputUploadInfo) = "setUploadInfo($event)"
+              style="width:100%;"
+              ></app-new-upload> 
+              
+              <span style="color: black;" class="badge badge-secondary">{{updateResult}}</span>
+		</div>
+	</div>
+</form>

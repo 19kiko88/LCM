@@ -7,6 +7,7 @@ using System.Data;
 
 using LCM.Services.Models;
 using DocumentFormat.OpenXml.Spreadsheet;
+using LCM.Services.Dtos;
 
 namespace LCM.Services.Interfaces
 {
@@ -20,14 +21,14 @@ namespace LCM.Services.Interfaces
         /// <param name="dt"></param>
         /// <param name="updateUser"></param>
         /// <returns></returns>
-        public Task<string> InsertS18(DataTable dt, string updateUser);
+        public Task<InsertInfo> InsertS18(DataTable dt, string updateUser);
         /// <summary>
         /// 大18 data insert to DB
         /// </summary>
         /// <param name="dt"></param>
         /// <param name="updateUser"></param>
         /// <returns></returns>
-        public Task<string> InsertB18(DataTable dt, string updateUser);
+        public Task<InsertInfo> InsertB18(DataTable dt, string updateUser);
         /// <summary>
         /// 取得PK報表EXCEL內容
         /// </summary>

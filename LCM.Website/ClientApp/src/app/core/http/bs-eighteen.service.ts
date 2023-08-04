@@ -7,6 +7,7 @@ import { tap } from 'rxjs/internal/operators/tap';
 import { IResultDto } from 'src/app/shared/models/dto/response/result-dto';
 import { environment } from 'src/environments/environment';
 import { BaseService } from './base.service';
+import { DatePipe } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,8 @@ import { BaseService } from './base.service';
 export class BsEighteenService extends BaseService 
 {
   constructor(
-    private httpClient: HttpClient
+    private httpClient: HttpClient,
+    private datePipe: DatePipe
   ) 
   { 
     super(); 
@@ -63,7 +65,7 @@ export class BsEighteenService extends BaseService
         catch
         {//轉IResultDto失敗代表excel產生正常，沒有經過後端ExceptionFilter，開始下載excel
           this.downloadFile(
-            'PK_RESULT.xlsx',
+            `BS18_PK_${this.datePipe.transform(new Date(), "yyyyMMddHHmmss")}.xlsx`,
             data,
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
           )          
@@ -72,6 +74,23 @@ export class BsEighteenService extends BaseService
       })
     )
   }
+
+  ExportTemplate(templateFileType: string):Observable<any>
+  {
+    const url = `${environment.apiBaseUrl}/BsEighteen/TemplateFileDownload/${templateFileType}`;
+    const options:any = this.generatePostOptions();
+    options.responseType = 'arraybuffer';
+
+    return this.httpClient.post(url, null, options)
+          .pipe(map(data => {
+            this.downloadFile(
+              `${templateFileType}_Template.xlsx`,
+              data,
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            ) 
+          })
+          )
+  }  
 
     //手動結案
     manualClose(data: FileInfo): Observable<IResultDto<number>>

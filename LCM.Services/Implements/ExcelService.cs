@@ -19,33 +19,33 @@ namespace LCM.Services.Implements
         }
 
         /// <summary>
-        /// 讀取Excel內容轉DataTable(DT表頭不變動，可以與DB欄位直接對應)
+        /// 讀取Excel內容轉DataTable(DT表頭不變動與實體excel檔表頭一樣)
         /// </summary>
         /// <param name="filePath">excel檔路徑</param>
         /// <param name="headerRow">表頭所在列數</param>
         /// <returns></returns>
-        public async Task<DataTable> ReadExcel(string filePath, int? lastCell, int headerRow = 1, int sheetIndex = 1)
+        public async Task<DataTable> ReadExcel(string filePath, int? lastCell, int headerRow = 1, int sheetIndex = 1, bool onlyHeader = false)
         {
             var dt = new DataTable();
             if (!Directory.Exists(filePath))
             {
-                dt = await ExcelHelper.ReadExcel(filePath, lastCell, headerRow, sheetIndex);
+                dt = await ExcelHelper.ReadExcel(filePath, lastCell, headerRow, sheetIndex, onlyHeader);
             }
             return dt;
         }
 
         /// <summary>
-        /// 讀取Excel內容轉DataTable(DT表頭由Model重新取得，才能與DB欄位對應)
+        /// 讀取Excel內容轉DataTable(DT表頭由Model重新取得，實體excel檔表頭不限制內容)
         /// </summary>
         /// <param name="filePath">excel檔路徑</param>
         /// <param name="headerRow">表頭所在列數</param>
         /// <returns></returns>
-        public async Task<DataTable> ReadExcel<T>(string filePath, int? lastCell, int headerRow = 1, int sheetIndex = 1)
+        public async Task<DataTable> ReadExcel<T>(string filePath, int? lastCell, int headerRow = 1, int sheetIndex = 1, bool onlyHeader = false)
         {
             var dt = new DataTable();
             if (!Directory.Exists(filePath))
             {
-                dt = await ExcelHelper.ReadExcel<T>(filePath, lastCell, headerRow, sheetIndex);
+                dt = await ExcelHelper.ReadExcel<T>(filePath, lastCell, headerRow, sheetIndex, onlyHeader);
             }
             return dt;
         }
@@ -78,16 +78,43 @@ namespace LCM.Services.Implements
             ExcelHelper.SettingCellStyle(wsNoneClose, listPkResult_NoneClose.Count);
 
             //把系統產出的報表appen到廠商提供excel的分頁後面
-            XLWorkbook wbVendorReport = new XLWorkbook(filePath);
-            wbVendorReport.AddWorksheet(wb.Worksheet(1));
-            wbVendorReport.AddWorksheet(wb.Worksheet(2));
+            //XLWorkbook wbVendorReport = new XLWorkbook(filePath);
+            //wbVendorReport.AddWorksheet(wb.Worksheet(1));
+            //wbVendorReport.AddWorksheet(wb.Worksheet(2));
 
             //輸出Excel報表
             var ms = new MemoryStream();
-            wbVendorReport.SaveAs(ms);
+            //wbVendorReport.SaveAs(ms);
+            wb.SaveAs(ms);
             ms.Seek(0, SeekOrigin.Begin);
 
             return new FileStreamResult(ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        }
+
+        public async Task<FileStreamResult> ExportExcel(string filePath)
+        {
+            XLWorkbook wb = new XLWorkbook(filePath);
+
+            //輸出Excel報表
+            var ms = new MemoryStream();
+            //wbVendorReport.SaveAs(ms);
+            wb.SaveAs(ms);
+            ms.Seek(0, SeekOrigin.Begin);
+
+            return new FileStreamResult(ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        }
+
+        /// <summary>
+        /// excel表頭檢查
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dt"></param>
+        /// <param name="includeColumns">指定檢核欄位</param>
+        /// <param name="exceptColumns">排除檢核欄位</param>
+        /// <returns></returns>
+        public async Task<bool> ExcelHeaderColumnCheck<T>(DataTable dt, string[] includeColumns = null, string[] exceptColumns = null)
+        {
+            return ExcelHelper.ExcelHeaderColumnCheck<T>(dt, includeColumns, exceptColumns);            
         }
     }
 }

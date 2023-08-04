@@ -8,7 +8,7 @@ import { Component, Input } from '@angular/core';
 export class LoadingComponent {
 
   @Input() loader: boolean = false;  
-  @Input() loadingMsg: string = "處理中...";
+  @Input() loadingMsg: string|undefined = '';
 
   constructor() { }
 
@@ -16,4 +16,9 @@ export class LoadingComponent {
     
   }
 
+}
+
+export interface LoadingInfo{
+  isLoading: boolean;
+  loadingMessage?: string;
 }

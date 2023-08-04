@@ -20,6 +20,8 @@ public partial class CAEDB01Context : DbContext
 
     public virtual DbSet<PnPrice> PnPrice { get; set; }
 
+    public virtual DbSet<PoStatusDesc> PoStatusDesc { get; set; }
+
     public virtual DbSet<Status> Status { get; set; }
 
     public virtual DbSet<XxPor0001_Resell> XxPor0001_Resell { get; set; }
@@ -94,6 +96,18 @@ public partial class CAEDB01Context : DbContext
                 .HasConstraintName("pnprice_fk");
         });
 
+        modelBuilder.Entity<PoStatusDesc>(entity =>
+        {
+            entity.HasKey(e => e.ID).HasName("_PoStatusDesc__pk");
+
+            entity.ToTable("PoStatusDesc", "LCM");
+
+            entity.Property(e => e.ID).ValueGeneratedNever();
+            entity.Property(e => e.Description)
+                .IsRequired()
+                .HasMaxLength(20);
+        });
+
         modelBuilder.Entity<Status>(entity =>
         {
             entity.HasKey(e => e.ID).HasName("status_pk");
@@ -130,6 +144,11 @@ public partial class CAEDB01Context : DbContext
             entity.Property(e => e.Updater)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            entity.HasOne(d => d.Status).WithMany(p => p.XxPor0001_Resell)
+                .HasForeignKey(d => d.StatusID)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("xxpor0001_resell_fk");
         });
 
         modelBuilder.Entity<Xx_Po_Receipt>(entity =>

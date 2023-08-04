@@ -1,0 +1,80 @@
+<form class="row g-3">
+  <div class="form-row">
+    <div class="col-md-6 col-sm-12">
+      <label class="form-label">範本檔下載：</label>
+
+      <div class="d-flex">
+        <app-select 
+        #selectFilterFile
+        [inputDisplayText]="'請選擇範本檔類型'"
+        [inputOptionData]=optFilterFile
+        (outputSelectedValue) = "setTemplateInfo($event)"
+        ></app-select>
+
+        <button  
+          *ngIf="templateFileType != '';" 
+          type="button"  
+          class="btn btn-primary btn-sm" style="margin-left: 25px;" (click)="templateDownload();">
+          <i class="fa fa-download" aria-hidden="true"></i>
+          下載
+        </button>
+      </div>
+
+      <div>
+        <ng-container *ngIf="templateFileType!='Vendor' && templateFileType!=''">
+          <span style="color:red">*請勿自行增加表頭列。</span>
+          <br/>
+          <span style="color:red">*欄位名稱請勿重複，表頭底色為紅色欄位請勿刪除。</span>
+        </ng-container>
+
+        <ng-container *ngIf="templateFileType=='Vendor'">
+          <span style="color:red">*請勿自行增加表頭列。</span>
+          <br/>
+          <span style="color:red">*欄位名稱請勿重複，表頭欄位請勿刪除。</span>
+          <br/>
+          <span style="color:red">*小18-大18資料請調整為一對多格式。</span>
+        </ng-container>
+
+      </div>
+    </div>    
+  </div>
+
+  <div class="form-row">
+    <div class="col-md-6 col-sm-12">
+        <label class="form-label">小18報表：</label>
+              <app-new-upload 
+              #uploadBatchFile
+              [inputApiUrl] = "uploadApiURL +'/S18'"
+              (outputUploadInfo) = "setUploadInfo($event)"
+              style="width:100%;"
+              ></app-new-upload> 
+    </div>
+    <span style="color: black;" class="badge badge-secondary">{{notificationS18}}</span>
+  </div>
+
+  <div class="form-row">
+    <div class="col-md-6 col-sm-12">
+        <label class="form-label">大18報表：</label>
+              <app-new-upload 
+              #uploadBatchFile
+              [inputApiUrl] = "uploadApiURL +'/B18'"
+              (outputUploadInfo) = "setUploadInfo($event)"
+              style="width:100%;"
+              ></app-new-upload> 
+      <span style="color: black;" class="badge badge-secondary">{{notificationB18}}</span>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="col-md-6 col-sm-12">
+        <label class="form-label">廠商提供報表：</label>
+              <app-new-upload 
+              #uploadBatchFile
+              [inputApiUrl] = "uploadApiURL +'/Vendor'"
+              (outputUploadInfo) = "setUploadInfo($event)"
+              style="width:100%;"
+              ></app-new-upload> 
+        <span style="color: black;" class="badge badge-secondary">{{notificationPkResult}}</span>
+    </div>
+  </div>	
+  </form>

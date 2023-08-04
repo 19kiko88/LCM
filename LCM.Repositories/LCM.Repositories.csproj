@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="implements\**" />
+    <Compile Remove="interfaces\**" />
+    <EmbeddedResource Remove="implements\**" />
+    <EmbeddedResource Remove="interfaces\**" />
+    <None Remove="implements\**" />
+    <None Remove="interfaces\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="MyDbContext.cs" />
   </ItemGroup>
 

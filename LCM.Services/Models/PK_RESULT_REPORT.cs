@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LCM.Services.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,6 +44,7 @@ namespace LCM.Services.Models
         public string DB_B18_POUnitPrice { get; set; }
         public string DB_B18_TransactionDate { get; set; }
 
+        public string V_B18_Project { get; set; }
         public string V_B18_Note { get; set; }
         public string PK_RESULT { get; set; }
         public string MANUAL_CLOSED_NOTE { get; set; }
@@ -51,6 +53,7 @@ namespace LCM.Services.Models
         public string HiddenSONo { get; set; }
         public string HiddenSOLineNo { get; set; }
         public string HiddenTransactionId { get; set; }
-        public string HiddenColumn { get; set; } = "HiddenColumn_1";//隱藏欄位，避免row全沒資料會中斷篩選功能結果
+        public int HiddenS18StatusId { get; set; }
+        public string HiddenAvoidExcelFilterBreak { get; set; } = "N/A";//隱藏欄位，避免row全沒資料會中斷篩選功能結果
     }
 }

@@ -13,6 +13,7 @@
    "Schemas": null,
    "SelectedHandlebarsLanguage": 0,
    "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
    "Tables": [
       {
          "Name": "LCM.Evidence",
@@ -24,6 +25,10 @@
       },
       {
          "Name": "LCM.PnPrice",
+         "ObjectType": 0
+      },
+      {
+         "Name": "LCM.PoStatusDesc",
          "ObjectType": 0
       },
       {

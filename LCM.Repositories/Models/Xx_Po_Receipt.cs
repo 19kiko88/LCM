@@ -29,5 +29,7 @@ public partial class Xx_Po_Receipt
 
     public int? XxPor0001_Resell_ID { get; set; }
 
+    public string Project { get; set; }
+
     public virtual XxPor0001_Resell XxPor0001_Resell { get; set; }
 }
