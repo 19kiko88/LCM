@@ -1,5 +1,10 @@
-html, body {
+:root{
   --bs-body-bg: #d2e7ef;
+}
+
+html, body {
+  background-color: var(--bs-body-bg);
+  /* --bs-body-bg: #d2e7ef; */
 }
 
 /*Header-----------------------------------------*/
