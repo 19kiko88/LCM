@@ -1,6 +1,7 @@
 <select 
-    #mySelect 
-    (change) ="onSelected(mySelect.value)"
+
+    [(ngModel)]="selectedValue"
+    (change) ="onSelected(selectedValue)"
     class="form-select" 
     aria-label="Default select example">
 
