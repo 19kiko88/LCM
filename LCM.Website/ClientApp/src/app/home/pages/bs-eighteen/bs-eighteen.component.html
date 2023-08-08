@@ -5,8 +5,10 @@
 
       <div class="d-flex">
         <app-select 
-        #selectTemplateFileType
-        [inputOptionData]=optTemplateFileType
+        #selectFilterFile
+        [inputDisplayText]="'請選擇範本檔類型'"
+        [inputOptionData]=optFilterFile
+        (outputSelectedValue) = "setTemplateInfo($event)"
         ></app-select>
 
         <button  

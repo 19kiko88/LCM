@@ -1,16 +1,12 @@
-import { LoadingService } from './../../../shared/components/loading/loading.service';
-import { LoadingInfo } from './../../../shared/components/loading/loading.component';
-import { ShareService } from './../../../core/service/share.service';
-import { FileInfo } from './../../../shared/models/dto/request/file-info';
+import { FileInfo } from './../../../../shared/models/dto/request/file-info';
 import { Component } from '@angular/core';
-import { BsEighteenService } from '../../../core/http/bs-eighteen.service'
+import { BsEighteenService } from '../../../../core/http/bs-eighteen.service'
 import { DatePipe } from '@angular/common'
 import Swal from 'sweetalert2';
-import {SweetAlertService} from '../../../core/service/sweet-alert.service'
+import {SweetAlertService} from '../../../../core/service/sweet-alert.service'
 import { UploadInfo, UploadType } from 'src/app/shared/components/new-upload/new-upload.component';
 import { environment } from 'src/environments/environment';
 import { FileTypeCode } from 'src/app/shared/models/file-type-code';
-import { DropdownOption } from 'src/app/shared/components/select/select.component';
 
 
 @Component({
@@ -21,40 +17,23 @@ import { DropdownOption } from 'src/app/shared/components/select/select.componen
 
 export class BsEighteenComponent 
 {  
-  loadingInfo: LoadingInfo = { isLoading: false}
+  isLoading: boolean = false;
+  loadingMsg: string = "";
   notificationS18: string = "";
   notificationB18: string = "";
   notificationPkResult: string = "";
   uploadApiURL: string = "";
-  templateFileType: string = "";
-  templateFileInfo: string = "";
-  optFilterFile: DropdownOption[] = [
-    {value:"", text:"無"}, 
-    {value:"S18", text:"小18"}, 
-    {value:"B18", text:"大18"},
-    {value:"Vendor", text:"廠商提供報表"},
-  ]
 
   constructor(
     private _bsEighteenService: BsEighteenService,
     private _swlService: SweetAlertService,
-    private _shareService: ShareService,
-    private _loadingService: LoadingService,
     private datepipe: DatePipe
   ){  }
 
   ngOnInit()
   {
     this.uploadApiURL = `${environment.apiBaseUrl}/BsEighteen/Upload`;
-
   } 
-
-  ngAfterViewInit()
-  {
-    setTimeout(() => {
-      this._shareService.emitChange("大小18報表比對");
-    }); 
-  }
 
   setUploadInfo(data: UploadInfo)
   {
@@ -81,12 +60,12 @@ export class BsEighteenComponent
 
     if(data.status == UploadType.Processing)
     {
-      this._loadingService.setLoading(true, '檔案上傳中...');
+      this.loadingMsg = '檔案上傳中...';
+      this.isLoading = true;
     }
     else if (data.status == UploadType.Success)
-    {     
-      this._loadingService.setLoading(true, '檔案資料處理中...');
-
+    {    
+      this.loadingMsg = '檔案資料處理中...';      
       if (data.uploadFileType == FileTypeCode.S18) 
       {
         this._bsEighteenService.insertS18(fileInfo).subscribe({
@@ -104,10 +83,10 @@ export class BsEighteenComponent
           },
           error: (err) =>{
             this._swlService.showSwal('', msgFail, 'error');
-            this._loadingService.setLoading(false);
+            this.isLoading = false;
           },
           complete: () =>{
-            this._loadingService.setLoading(false);
+            this.isLoading = false;
           }
         })
       }
@@ -129,11 +108,11 @@ export class BsEighteenComponent
           error: (err) =>
           {
             this._swlService.showSwal('', msgFail, 'error');
-            this._loadingService.setLoading(false);
+            this.isLoading = false;
           },
           complete: () =>
           {
-            this._loadingService.setLoading(false);
+            this.isLoading = false;
           }
         })
       }
@@ -150,54 +129,15 @@ export class BsEighteenComponent
             this._swlService.showSwal('', `pk報表產出異常，請聯絡CAE Team.<br\>${res.message}`, 'error');
           }
 
-          this._loadingService.setLoading(false);
+          this.isLoading = false;
         })
       }
     }
     else if(data.status == UploadType.Fail)
     {
       this._swlService.showSwal('', `${data.fileName}上傳失敗,請聯絡CAE Team。${data.message}`, 'error');      
-      this._loadingService.setLoading(false);
+      this.isLoading = false;
     }
 
   } 
-
-  setTemplateInfo(event: string)
-  {
-    this.templateFileType = event;
-  } 
-
-  templateDownload()
-  {
-    this._loadingService.setLoading(true, '範本檔下載中...');
-
-    this._bsEighteenService.ExportTemplate(this.templateFileType).subscribe({
-      next: () => 
-      {
-        let templateName = '';
-        switch (this.templateFileType)
-        {
-          case "S18":
-            templateName = '小18'
-            break;
-          case "B18":
-            templateName = '大18'
-            break;  
-          case "Vendor":
-            templateName = '廠商提供報表'
-            break;  
-        }
-
-        this._swlService.showSwal('', `[${templateName}]範本檔下載完成.`, 'success');
-        this._loadingService.setLoading(false);
-      },
-      error: () => {
-        this._swlService.showSwal('', '系統異常,請聯絡CAE Team...', 'error');
-        this._loadingService.setLoading(false);
-      },
-      complete: () => { 
-
-      }
-    });
-  }
 }

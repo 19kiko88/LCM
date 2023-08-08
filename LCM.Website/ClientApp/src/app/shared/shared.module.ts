@@ -1,4 +1,3 @@
-import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedNgMaterialModule } from './shared-ngmaterial/shared-ngmaterial.module';
@@ -17,8 +16,7 @@ import { SelectComponent } from './components/select/select.component';
     CommonModule,
     SharedNgMaterialModule,
     SharedNgbootstrapModule,
-    RouterModule,
-    FormsModule
+    RouterModule
   ],
   exports:[MenuItemComponent, UploadComponent, NewUploadComponent, LoadingComponent, SelectComponent, MatCardModule]
 })

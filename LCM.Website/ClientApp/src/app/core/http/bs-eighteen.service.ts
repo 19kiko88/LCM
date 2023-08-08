@@ -75,7 +75,7 @@ export class BsEighteenService extends BaseService
     )
   }
 
-  ExportTemplate(templateFileType?: string):Observable<any>
+  ExportTemplate(templateFileType: string):Observable<any>
   {
     const url = `${environment.apiBaseUrl}/BsEighteen/TemplateFileDownload/${templateFileType}`;
     const options:any = this.generatePostOptions();
