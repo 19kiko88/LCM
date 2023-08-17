@@ -1,0 +1,7 @@
+{
+    "/OPD-io": {
+      "target": "http://apidata.tycg.gov.tw",
+      "secure": false,
+      "changeOrigin": true
+    }
+  }

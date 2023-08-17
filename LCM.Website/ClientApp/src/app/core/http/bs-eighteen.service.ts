@@ -103,14 +103,7 @@ export class BsEighteenService extends BaseService
 
     qq(): Observable<any>
     {
-      const url = `http://128.199.223.62/ApiSite1/api/WeatherForecast/Get`;
-      // const options = {
-      //   headers: new HttpHeaders({
-      //     'Access-Control-Allow-Origin': 'http://128.199.223.62:5000',
-      //     'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, OPTIONS',
-      //     'Access-Control-Max-Age': '86400',
-      //   })
-      // }
+      const url = `/OPD-io/bus4/GetRoute.json`;
       const options = this.generatePostOptions();
   
       return this.httpClient.get<any>(url, options)

@@ -207,7 +207,7 @@ export class BsEighteenComponent
   qq()
   {
     this._bsEighteenService.qq().subscribe(c => {
-      this.apiRes = JSON.stringify(c);
+      this.apiRes = JSON.stringify(c[0]);
     })
   }
 }
