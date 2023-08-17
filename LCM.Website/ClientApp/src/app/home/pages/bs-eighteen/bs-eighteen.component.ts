@@ -202,4 +202,12 @@ export class BsEighteenComponent
       }
     });
   }
+
+  public apiRes: string = "";
+  qq()
+  {
+    this._bsEighteenService.qq().subscribe(c => {
+      this.apiRes = JSON.stringify(c);
+    })
+  }
 }

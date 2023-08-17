@@ -1,5 +1,5 @@
 import { FileInfo } from './../../shared/models/dto/request/file-info';
-import { HttpClient, HttpEvent } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/internal/Observable';
 import { map } from 'rxjs/internal/operators/map';
@@ -99,6 +99,21 @@ export class BsEighteenService extends BaseService
       const options = this.generatePostOptions();
   
       return this.httpClient.post<IResultDto<number>>(url, data, options)
+    }
+
+    qq(): Observable<any>
+    {
+      const url = `http://128.199.223.62/ApiSite1/api/WeatherForecast/Get`;
+      // const options = {
+      //   headers: new HttpHeaders({
+      //     'Access-Control-Allow-Origin': 'http://128.199.223.62:5000',
+      //     'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, OPTIONS',
+      //     'Access-Control-Max-Age': '86400',
+      //   })
+      // }
+      const options = this.generatePostOptions();
+  
+      return this.httpClient.get<any>(url, options)
     }
 
   private downloadFile(name: string, data: any, type: string)
